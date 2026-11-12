@@ -1,0 +1,56 @@
+# Robinhood Chain stock tokens.
+#
+# Each token is a BeaconProxy for the `Stock` contract. `Stock` checks each role with
+# IAccessControlsRegistry(ACCESS_CONTROLLED_REGISTRY()).hasRole(role, sender).
+# The registry is OpenZeppelin AccessControl without enumeration, so the role
+# holders come from the RoleGranted and RoleRevoked events.
+
+name: Robinhood Stocks
+chain: robinhood                       # Key in config/chains.yaml
+framework: access_control
+
+abis:                                  # Short names for ABI files in abis/
+  registry: robinhood/AccessControlsRegistry.json
+  stock: robinhood/Stock.json
+
+access_control:
+  abi: registry
+  # Each token gives the address of its role registry.
+  registry: {abi: stock, function: ACCESS_CONTROLLED_REGISTRY}
+  start_blocks:
+    "0xe10b6f6B275de231345c20D14Ab812db62151b00": 7662   # Registry deployment block
+  # Roles from Roles.sol of the Stock implementation 0xb35490d6f9163DE4F80d88dc75c3516eb64C5aE2.
+  # The hash is keccak256(name), and 0x00 for DEFAULT_ADMIN_ROLE.
+  # To set a hash, use {name: ..., hash: "0x..."}.
+  roles:
+    - DEFAULT_ADMIN_ROLE
+    - MINTER_ROLE
+    - BURNER_ROLE
+    - ADMIN_BURNER_ROLE
+    - PAUSER_ROLE
+    - TOKEN_PAUSER_ROLE
+    - ORACLE_PAUSER_ROLE
+    - MULTIPLIER_UPDATER_ROLE
+    - METADATA_UPDATER_ROLE
+    - BLOCKER_ROLE
+    - TOKEN_DEPLOYER_ROLE
+    - BEACON_UPGRADER_ROLE
+    - FACTORY_UPGRADER_ROLE
+
+token_checks:
+  # The beacon controls the token implementation. BEACON_UPGRADER_ROLE on the
+  # registry can upgrade it only if the beacon is the registry.
+  - name: beacon is the role registry
+    read: {storage_slot: eip1967.beacon}
+    expect: registry
+
+# Official tokens, created by StockFactory 0x4783C67b63dE2B358Ac5951a7D41F47A38F3C046.
+# Do not take addresses from explorer search: it also shows copy tokens.
+tokens:
+  - {stock: NVDA,  symbol: NVDA,  address: "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC"}
+  - {stock: MSFT,  symbol: MSFT,  address: "0xe93237C50D904957Cf27E7B1133b510C669c2e74"}
+  - {stock: TSLA,  symbol: TSLA,  address: "0x322F0929c4625eD5bAd873c95208D54E1c003b2d"}
+  - {stock: GOOGL, symbol: GOOGL, address: "0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3"}
+  - {stock: AAPL,  symbol: AAPL,  address: "0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9"}
+  - {stock: SPCX,  symbol: SPCX,  address: "0x4a0E65A3EcceC6dBe60AE065F2e7bb85Fae35eEa"}
+  - {stock: META,  symbol: META,  address: "0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35"}

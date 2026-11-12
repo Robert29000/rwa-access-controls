@@ -1,0 +1,20 @@
+[
+  {"type": "function", "name": "hasRole", "stateMutability": "view",
+   "inputs": [{"name": "role", "type": "bytes32"}, {"name": "account", "type": "address"}],
+   "outputs": [{"name": "", "type": "bool"}]},
+  {"type": "function", "name": "getRoleAdmin", "stateMutability": "view",
+   "inputs": [{"name": "role", "type": "bytes32"}],
+   "outputs": [{"name": "", "type": "bytes32"}]},
+  {"type": "event", "name": "RoleGranted", "anonymous": false,
+   "inputs": [{"name": "role", "type": "bytes32", "indexed": true},
+              {"name": "account", "type": "address", "indexed": true},
+              {"name": "sender", "type": "address", "indexed": true}]},
+  {"type": "event", "name": "RoleRevoked", "anonymous": false,
+   "inputs": [{"name": "role", "type": "bytes32", "indexed": true},
+              {"name": "account", "type": "address", "indexed": true},
+              {"name": "sender", "type": "address", "indexed": true}]},
+  {"type": "event", "name": "RoleAdminChanged", "anonymous": false,
+   "inputs": [{"name": "role", "type": "bytes32", "indexed": true},
+              {"name": "previousAdminRole", "type": "bytes32", "indexed": true},
+              {"name": "newAdminRole", "type": "bytes32", "indexed": true}]}
+]

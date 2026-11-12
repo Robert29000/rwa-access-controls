@@ -1,0 +1,37 @@
+# API services and chains.
+# Each service reads its API key from the environment variable in `api_key_env` (see .env).
+# `min_interval` is the pause in seconds between two requests to the service.
+
+services:
+  drpc:
+    type: rpc
+    url: https://lb.drpc.live/{network}/{api_key}
+    api_key_env: DRPC_API_KEY
+    min_interval: 0.08        # Free tier: 25 requests/s
+
+  etherscan:
+    type: etherscan           # Etherscan API V2
+    url: https://api.etherscan.io/v2/api
+    api_key_env: ETHERSCAN_API_KEY
+    min_interval: 0.4         # Free tier: 3 requests/s
+
+  blockscout:
+    type: blockscout          # Blockscout PRO API. Do not use the per-chain hosts (Cloudflare bot check).
+    url: https://api.blockscout.com/{chain_id}
+    api_key_env: BLOCKSCOUT_API_KEY
+    min_interval: 0.25        # Free tier: 5 requests/s
+
+chains:
+  ethereum:
+    name: Ethereum
+    chain_id: 1
+    rpc: {service: drpc, network: ethereum}
+    explorer: {service: etherscan}
+    address_url: https://etherscan.io/address/{address}
+
+  robinhood:
+    name: Robinhood Chain
+    chain_id: 4663
+    rpc: {service: drpc, network: robinhood}
+    explorer: {service: blockscout}
+    address_url: https://robinhoodchain.blockscout.com/address/{address}

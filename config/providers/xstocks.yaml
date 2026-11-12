@@ -1,0 +1,59 @@
+# xStocks (Backed Finance) tokens on Ethereum.
+#
+# Each token is a TransparentUpgradeableProxy for BackedAutoFeeTokenImplementation.
+# Each role is one address variable with a setter event.
+# Source: https://github.com/backed-fi/backed-token-contract
+
+name: xStocks
+chain: ethereum                        # Key in config/chains.yaml
+framework: single_address_roles
+
+abis:                                  # Short names for ABI files in abis/
+  token: backed/BackedAutoFeeTokenImplementation.json
+  proxy: backed/BackedTokenProxy.json
+  proxy_admin: backed/ProxyAdmin.json
+
+# For each role: the setter event and its address argument (current value = newest event),
+# and the on-chain reader that validates the value.
+roles:
+  - name: owner
+    event: {abi: token, name: OwnershipTransferred, arg: newOwner}
+    read: {abi: token, function: owner}
+
+  - name: minter
+    event: {abi: token, name: NewMinter, arg: newMinter}
+    read: {abi: token, function: minter}
+
+  - name: burner
+    event: {abi: token, name: NewBurner, arg: newBurner}
+    read: {abi: token, function: burner}
+
+  - name: pauser
+    event: {abi: token, name: NewPauser, arg: newPauser}
+    read: {abi: token, function: pauser}
+
+  - name: multiplierUpdater
+    event: {abi: token, name: NewMultiplierUpdater, arg: newMultiplierUpdater}
+    read: {abi: token, function: multiplierUpdater}
+
+  # The ProxyAdmin contract. AdminChanged has no indexed arguments: the address is in the data.
+  - name: proxyAdmin
+    event: {abi: proxy, name: AdminChanged, arg: newAdmin}
+    read: {storage_slot: eip1967.admin}
+
+  # Owner of the ProxyAdmin. This address can upgrade the token.
+  - name: proxyAdminOwner
+    source: proxyAdmin                 # Events and reads go to the proxyAdmin address
+    start_block: 0
+    event: {abi: proxy_admin, name: OwnershipTransferred, arg: newOwner}
+    read: {abi: proxy_admin, function: owner}
+
+# start_block: token creation block. The log scan starts there.
+tokens:
+  - {stock: NVDA,  symbol: NVDAx,  address: "0xc845b2894dbddd03858fd2d643b4ef725fe0849d", start_block: 23081551}
+  - {stock: MSFT,  symbol: MSFTx,  address: "0x5621737f42dae558b81269fcb9e9e70c19aa6b35", start_block: 23081555}
+  - {stock: TSLA,  symbol: TSLAx,  address: "0x8ad3c73f833d3f9a523ab01476625f269aeb7cf0", start_block: 23081575}
+  - {stock: GOOGL, symbol: GOOGLx, address: "0xe92f673ca36c5e2efd2de7628f815f84807e803f", start_block: 23081567}
+  - {stock: AAPL,  symbol: AAPLx,  address: "0x9d275685dc284c8eb1c79f6aba7a63dc75ec890a", start_block: 23081545}
+  - {stock: SPCX,  symbol: SPCXx,  address: "0x68fa48b1c2fe52b3d776e1953e0e782b5044ce28", start_block: 25223009}
+  - {stock: META,  symbol: METAx,  address: "0x96702be57cd9777f835117a809c7124fe4ec989a", start_block: 23081563}
