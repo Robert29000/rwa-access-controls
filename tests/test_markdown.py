@@ -22,6 +22,8 @@ def test_provider_section_tables():
         roles=["owner", "minter", "pauser"],
         holders=holders,
         addresses={A: AddressInfo(A, "Contract", verified=True), B: AddressInfo(B, "EOA")},
+        role_hashes={"owner": "0x" + "00" * 32},
+        role_registries=[A],
     )
     text = "\n".join(provider_section(result))
 
@@ -34,3 +36,6 @@ def test_provider_section_tables():
     assert f"| [{A}](https://x/{A}) | owner | Contract (verified) | — |" in text
     assert f"| [{B}](https://x/{B}) | minter (AAPL) | EOA | — |" in text
     assert "2 of 3 role assignments agree" in text
+    # Role hashes table, only when the provider gives hashes.
+    assert f"call `hasRole(role, account)` on the role registry: [{A}](https://x/{A})" in text
+    assert f"| owner | `0x{'00' * 32}` |" in text

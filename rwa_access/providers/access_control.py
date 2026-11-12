@@ -65,6 +65,12 @@ class AccessControlProvider(StockProvider):
     def role_names(self) -> list[str]:
         return [role.name for role in self.roles]
 
+    def role_hashes(self) -> dict[str, str]:
+        return {role.name: role.hash for role in self.roles}
+
+    def role_registries(self) -> list[str]:
+        return list(dict.fromkeys(self.registry_of.values()))
+
     def context_value(self, token: Token, name: str) -> str | None:
         if name == "registry":
             return self.registry_of.get(token.address)

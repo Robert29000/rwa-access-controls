@@ -98,6 +98,14 @@ class StockProvider(ABC):
     def validate(self, holders: list[RoleHolder], block: int) -> None:
         """Set `validated` and `note` on each holder with RPC reads at `block`."""
 
+    def role_hashes(self) -> dict[str, str]:
+        """Role name -> bytes32 hash. Only for frameworks with hashed roles."""
+        return {}
+
+    def role_registries(self) -> list[str]:
+        """Contracts that answer hasRole(). Only for frameworks with hashed roles."""
+        return []
+
     def context_value(self, token: Token, name: str) -> str | None:
         """Resolve a name used in `token_checks.expect`. Subclasses add names."""
         return None
@@ -154,4 +162,6 @@ class StockProvider(ABC):
             holders=holders,
             addresses=addresses,
             notes=self.notes,
+            role_hashes=self.role_hashes(),
+            role_registries=self.role_registries(),
         )

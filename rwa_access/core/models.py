@@ -69,3 +69,7 @@ class ProviderResult:
     holders: list[RoleHolder]
     addresses: dict[str, AddressInfo] = field(default_factory=dict)  # Key: checksum address
     notes: list[str] = field(default_factory=list)
+    # Only for role-hash frameworks (AccessControl): role name -> bytes32 hash,
+    # and the contracts to call hasRole() on.
+    role_hashes: dict[str, str] = field(default_factory=dict)
+    role_registries: list[str] = field(default_factory=list)

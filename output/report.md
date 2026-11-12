@@ -1,6 +1,6 @@
 # Access control report for tokenized stocks
 
-Generated: 2026-11-12 21:52 UTC.
+Generated: 2026-11-12 22:57 UTC.
 
 This report shows the current role holders of each stock token. The script did these steps:
 
@@ -22,7 +22,7 @@ In the "Role" column of the address table, a stock list in parentheses shows tha
 ## Robinhood Stocks
 
 - Chain: Robinhood Chain (chain ID 4663).
-- Snapshot block: 112855557.
+- Snapshot block: 112890861.
 - Validation: 119 of 119 role assignments agree with the RPC read at the snapshot block.
 
 ### Tokens
@@ -36,6 +36,26 @@ In the "Role" column of the address table, a stock list in parentheses shows tha
 | AAPL | AAPL | [0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9](https://robinhoodchain.blockscout.com/address/0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9) |
 | SPCX | SPCX | [0x4a0E65A3EcceC6dBe60AE065F2e7bb85Fae35eEa](https://robinhoodchain.blockscout.com/address/0x4a0E65A3EcceC6dBe60AE065F2e7bb85Fae35eEa) |
 | META | META | [0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35](https://robinhoodchain.blockscout.com/address/0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35) |
+
+### Role hashes
+
+To examine a role on the explorer, call `hasRole(role, account)` on the role registry: [0xe10b6f6B275de231345c20D14Ab812db62151b00](https://robinhoodchain.blockscout.com/address/0xe10b6f6B275de231345c20D14Ab812db62151b00).
+
+| Role | Hash (bytes32) |
+| --- | --- |
+| DEFAULT_ADMIN_ROLE | `0x0000000000000000000000000000000000000000000000000000000000000000` |
+| MINTER_ROLE | `0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6` |
+| BURNER_ROLE | `0x3c11d16cbaffd01df69ce1c404f6340ee057498f5f00246190ea54220576a848` |
+| ADMIN_BURNER_ROLE | `0x25e7ebc863fa4efd16243c82323b71f247c0cf439aca64c51b84a74afb738936` |
+| PAUSER_ROLE | `0x65d7a28e3265b37a6474929f336521b332c1681b933f6cb9f3376673440d862a` |
+| TOKEN_PAUSER_ROLE | `0xe95e22ec6dbf4c911d1fae59680a3e9cb71dd35b3a1c697d232e4b01a8ff30a2` |
+| ORACLE_PAUSER_ROLE | `0x155fc2c2b00b801014447f9d3a1522625740f8e592e4c0b0bb7c5867c150aa11` |
+| MULTIPLIER_UPDATER_ROLE | `0x7158cf42e4a4f01c5456c8d75cdbd375748d45e9db7e812f5bcd18844122b615` |
+| METADATA_UPDATER_ROLE | `0x7f5260842512b02356ff92de24be96e7e1aac2e234d9371b076ac2b4cddda61e` |
+| BLOCKER_ROLE | `0x8f2e0057cd5e35397007bcc8f5418f73dd64cc6e4073a0276563f247c3079037` |
+| TOKEN_DEPLOYER_ROLE | `0x5f077d4e72bed5b3b14877559c782788e60c3fbb27bf29d3586097d8fa36bbeb` |
+| BEACON_UPGRADER_ROLE | `0x5ab8bd28475e0dc8d5764e9ce50f85ffe2f14ec40c5b74e45f541485ad510c39` |
+| FACTORY_UPGRADER_ROLE | `0xb4e5de7340a2fee2ff9be79f5ec0e8feae4b633bc8cc663711520e08f24984f8` |
 
 ### Role holders by stock
 
@@ -78,7 +98,7 @@ In the "Role" column of the address table, a stock list in parentheses shows tha
 ## xStocks
 
 - Chain: Ethereum (chain ID 1).
-- Snapshot block: 26401673.
+- Snapshot block: 26401995.
 - Validation: 49 of 49 role assignments agree with the RPC read at the snapshot block.
 
 ### Tokens

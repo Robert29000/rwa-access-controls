@@ -75,12 +75,27 @@ def provider_section(result: ProviderResult) -> list[str]:
         [[t.stock, t.symbol, f"[{t.address}]({result.address_url.format(address=t.address)})"]
          for t in result.tokens],
     )
+    if result.role_hashes:
+        lines += ["", "### Role hashes", ""]
+        lines += role_hash_section(result)
     lines += ["", "### Role holders by stock", ""]
     lines += role_matrix(result)
     lines += ["", "### Role holder addresses", ""]
     lines += address_table(result)
     lines.append("")
     return lines
+
+
+def role_hash_section(result: ProviderResult) -> list[str]:
+    """Role name to bytes32 hash, for a manual hasRole(role, account) check on the explorer."""
+    links = ", ".join(
+        f"[{address}]({result.address_url.format(address=address)})" for address in result.role_registries
+    )
+    lines = [
+        f"To examine a role on the explorer, call `hasRole(role, account)` on the role registry: {links}.",
+        "",
+    ]
+    return lines + _table(["Role", "Hash (bytes32)"], [[n, f"`{h}`"] for n, h in result.role_hashes.items()])
 
 
 HEADER = """# Access control report for tokenized stocks
