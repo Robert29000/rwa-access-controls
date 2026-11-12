@@ -1,0 +1,5 @@
+[
+  {"type": "function", "name": "implementation", "stateMutability": "view",
+   "inputs": [],
+   "outputs": [{"name": "", "type": "address"}]}
+]
