@@ -1,12 +1,13 @@
 # Access control report for tokenized stocks
 
-Generated: 2026-11-12 22:57 UTC.
+Generated: 2026-11-12 23:03 UTC.
 
 This report shows the current role holders of each stock token. The script did these steps:
 
 1. The script read the role events from the block explorer. It kept only the current holders.
 2. The script read each role on chain with an RPC call at the snapshot block. It compared the RPC value with the value from the events.
 3. The script read the code at each holder address. It set the type of each address.
+4. For each contract, the script read the EIP-1967 storage slots. If the contract is an ERC-1967 proxy, the script read its implementation address. Then it read the type and the verification status of the implementation.
 
 Types of address:
 
@@ -17,12 +18,20 @@ Types of address:
 
 "(not validated)" after an address means that the RPC value is different from the value in the events. Examine these addresses manually.
 
-In the "Role" column of the address table, a stock list in parentheses shows that the address has the role only for those stocks. If there is no list, the address has the role for all stocks.
+The "Proxy contracts" table shows the role holders that are ERC-1967 proxies:
+
+- **Proxy type**: "ERC-1967" means that the implementation is in the EIP-1967 implementation slot. "ERC-1967 beacon" means that the proxy gets the implementation from a beacon contract.
+- **Admin or beacon**: The value of the EIP-1967 admin slot, or the beacon address. A dash means that the admin slot is empty. In this case, the upgrade function is usually in the implementation (UUPS).
+- The contract name below an address comes from the block explorer.
+
+The tool supports only ERC-1967 proxies. If the explorer marks a contract as a proxy of a different type, the "Note" column of the address table tells you.
+
+Look at the "Role" column of the address and proxy tables. A stock list in parentheses shows that the address has the role only for those stocks. If there is no list, the address has the role for all stocks.
 
 ## Robinhood Stocks
 
 - Chain: Robinhood Chain (chain ID 4663).
-- Snapshot block: 112890861.
+- Snapshot block: 112894098.
 - Validation: 119 of 119 role assignments agree with the RPC read at the snapshot block.
 
 ### Tokens
@@ -80,8 +89,8 @@ To examine a role on the explorer, call `hasRole(role, account)` on the role reg
 | Address | Role | Type | Note |
 | --- | --- | --- | --- |
 | [0xD6f8378F8e440c65F8382F5f2728c78DfD55B66d](https://robinhoodchain.blockscout.com/address/0xD6f8378F8e440c65F8382F5f2728c78DfD55B66d) | DEFAULT_ADMIN_ROLE | EOA | — |
-| [0x13643b89b19245201b29d556EDDe5CF18f749C08](https://robinhoodchain.blockscout.com/address/0x13643b89b19245201b29d556EDDe5CF18f749C08) | MINTER_ROLE<br>BURNER_ROLE | Contract (verified) | — |
-| [0x23E56DFe325da9de90F6e2b1E6f3f5CFf76E34c8](https://robinhoodchain.blockscout.com/address/0x23E56DFe325da9de90F6e2b1E6f3f5CFf76E34c8) | MINTER_ROLE<br>BURNER_ROLE | Contract (verified) | — |
+| [0x13643b89b19245201b29d556EDDe5CF18f749C08](https://robinhoodchain.blockscout.com/address/0x13643b89b19245201b29d556EDDe5CF18f749C08) | MINTER_ROLE<br>BURNER_ROLE | Contract (verified) | ERC-1967 proxy |
+| [0x23E56DFe325da9de90F6e2b1E6f3f5CFf76E34c8](https://robinhoodchain.blockscout.com/address/0x23E56DFe325da9de90F6e2b1E6f3f5CFf76E34c8) | MINTER_ROLE<br>BURNER_ROLE | Contract (verified) | ERC-1967 proxy |
 | [0x2b94105fFf37630f98e1f24811daD588FC5C3A87](https://robinhoodchain.blockscout.com/address/0x2b94105fFf37630f98e1f24811daD588FC5C3A87) | MINTER_ROLE | EOA | — |
 | [0x6E40B50A40C1db42A85a0E8fe8FF7d9CbFc2D8C1](https://robinhoodchain.blockscout.com/address/0x6E40B50A40C1db42A85a0E8fe8FF7d9CbFc2D8C1) | BURNER_ROLE | EOA | — |
 | [0x957B6de6525C63349f7619743Ef1E0ad93cd74D4](https://robinhoodchain.blockscout.com/address/0x957B6de6525C63349f7619743Ef1E0ad93cd74D4) | ADMIN_BURNER_ROLE | EOA | — |
@@ -95,10 +104,17 @@ To examine a role on the explorer, call `hasRole(role, account)` on the role reg
 | [0xCd8C6182e7C6Ca3B5156D6a90a67719d7e2Be094](https://robinhoodchain.blockscout.com/address/0xCd8C6182e7C6Ca3B5156D6a90a67719d7e2Be094) | BEACON_UPGRADER_ROLE | EOA | — |
 | [0x697e774d60c1a3769f2eD0b919AAcf17be0ae553](https://robinhoodchain.blockscout.com/address/0x697e774d60c1a3769f2eD0b919AAcf17be0ae553) | FACTORY_UPGRADER_ROLE | EOA | — |
 
+### Proxy contracts
+
+| Proxy | Role | Proxy type | Implementation | Implementation type | Admin or beacon | Note |
+| --- | --- | --- | --- | --- | --- | --- |
+| [0x13643b89b19245201b29d556EDDe5CF18f749C08](https://robinhoodchain.blockscout.com/address/0x13643b89b19245201b29d556EDDe5CF18f749C08)<br>ERC1967Proxy | MINTER_ROLE<br>BURNER_ROLE | ERC-1967 | [0x31e111c1CD0406AE357D5041F8459FbFB4FE9113](https://robinhoodchain.blockscout.com/address/0x31e111c1CD0406AE357D5041F8459FbFB4FE9113) | Contract (not verified) | — | — |
+| [0x23E56DFe325da9de90F6e2b1E6f3f5CFf76E34c8](https://robinhoodchain.blockscout.com/address/0x23E56DFe325da9de90F6e2b1E6f3f5CFf76E34c8)<br>ERC1967Proxy | MINTER_ROLE<br>BURNER_ROLE | ERC-1967 | [0x99aa278519f0FB8deE91195Bffb1cC7DA5567663](https://robinhoodchain.blockscout.com/address/0x99aa278519f0FB8deE91195Bffb1cC7DA5567663) | Contract (not verified) | — | — |
+
 ## xStocks
 
 - Chain: Ethereum (chain ID 1).
-- Snapshot block: 26401995.
+- Snapshot block: 26402025.
 - Validation: 49 of 49 role assignments agree with the RPC read at the snapshot block.
 
 ### Tokens
@@ -129,8 +145,12 @@ To examine a role on the explorer, call `hasRole(role, account)` on the role reg
 
 | Address | Role | Type | Note |
 | --- | --- | --- | --- |
-| [0x49754062E35f7591B93cc4F9915965be89643a65](https://etherscan.io/address/0x49754062E35f7591B93cc4F9915965be89643a65) | owner<br>proxyAdminOwner | Contract (verified) | — |
+| [0x49754062E35f7591B93cc4F9915965be89643a65](https://etherscan.io/address/0x49754062E35f7591B93cc4F9915965be89643a65) | owner<br>proxyAdminOwner | Contract (verified) | The explorer marks this contract as a proxy (type: proxy, implementation 0x3E5c63644E683549055b9Be8653de26E0B4CD36E). The tool does not support this proxy type. |
 | [0x0A934Bc9c64309C9654451f23D8331C2DAD34C2a](https://etherscan.io/address/0x0A934Bc9c64309C9654451f23D8331C2DAD34C2a) | minter | EOA | — |
 | [0x5F7A4c11bde4f218f0025Ef444c369d838ffa2aD](https://etherscan.io/address/0x5F7A4c11bde4f218f0025Ef444c369d838ffa2aD) | burner<br>multiplierUpdater | EOA | — |
-| [0x8768cDA7A463DAe1baA6b2500EFB025ebd7FFC50](https://etherscan.io/address/0x8768cDA7A463DAe1baA6b2500EFB025ebd7FFC50) | pauser | Contract (verified) | — |
+| [0x8768cDA7A463DAe1baA6b2500EFB025ebd7FFC50](https://etherscan.io/address/0x8768cDA7A463DAe1baA6b2500EFB025ebd7FFC50) | pauser | Contract (verified) | The explorer marks this contract as a proxy (type: proxy, implementation 0x3E5c63644E683549055b9Be8653de26E0B4CD36E). The tool does not support this proxy type. |
 | [0x696C685a02A1Fc6E2AaCbe26CD6695F4f4a6a085](https://etherscan.io/address/0x696C685a02A1Fc6E2AaCbe26CD6695F4f4a6a085) | proxyAdmin | Contract (verified) | — |
+
+### Proxy contracts
+
+No role holder is a supported proxy.

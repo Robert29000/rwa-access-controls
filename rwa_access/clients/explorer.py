@@ -4,7 +4,7 @@
 
 from abc import ABC, abstractmethod
 
-from rwa_access.core.models import Log
+from rwa_access.core.models import ContractMeta, Log
 from rwa_access.http import RateLimitedSession
 
 PAGE_SIZE = 1000  # Both explorers return at most 1000 logs per call
@@ -15,7 +15,7 @@ class Explorer(ABC):
     def __init__(self, session: RateLimitedSession):
         self.session = session
         self._log_cache: dict[tuple, list[Log]] = {}
-        self._verified_cache: dict[str, bool] = {}
+        self._meta_cache: dict[str, ContractMeta] = {}
 
     # --- logs -------------------------------------------------------------
     @property
@@ -72,15 +72,19 @@ class Explorer(ABC):
             raise RuntimeError(f"getLogs failed for {address}: {body}")
         return [_parse_log(item) for item in body["result"]]
 
-    # --- verification -----------------------------------------------------
-    def is_verified(self, address: str) -> bool:
+    # --- contract metadata --------------------------------------------------
+    def contract_info(self, address: str) -> ContractMeta:
+        """Verified status, contract name and the explorer's proxy data (one call, cached)."""
         key = address.lower()
-        if key not in self._verified_cache:
-            self._verified_cache[key] = self._is_verified(address)
-        return self._verified_cache[key]
+        if key not in self._meta_cache:
+            self._meta_cache[key] = self._contract_info(address)
+        return self._meta_cache[key]
+
+    def is_verified(self, address: str) -> bool:
+        return self.contract_info(address).verified
 
     @abstractmethod
-    def _is_verified(self, address: str) -> bool: ...
+    def _contract_info(self, address: str) -> ContractMeta: ...
 
 
 def _parse_log(item: dict) -> Log:

@@ -1,4 +1,6 @@
 from rwa_access.clients.explorer import Explorer
+from rwa_access.core.models import ContractMeta
+from rwa_access.evm import to_checksum
 from rwa_access.http import RateLimitedSession
 
 
@@ -18,10 +20,21 @@ class EtherscanExplorer(Explorer):
     def logs_params(self) -> dict:
         return {"chainid": self.chain_id, "apikey": self.api_key}
 
-    def _is_verified(self, address: str) -> bool:
-        # getabi returns status "1" only for verified source code.
+    def _contract_info(self, address: str) -> ContractMeta:
+        # getsourcecode gives the verified status, name and proxy data in one call.
+        # For unverified code it returns status "1" with ABI "Contract source code not verified".
         body = self.session.get_json(
             self.base_url,
-            {"module": "contract", "action": "getabi", "address": address, **self.logs_params()},
+            {"module": "contract", "action": "getsourcecode", "address": address, **self.logs_params()},
         )
-        return body.get("status") == "1"
+        if body.get("status") != "1" or not body.get("result"):
+            raise RuntimeError(f"getsourcecode failed for {address}: {str(body)[:200]}")
+        item = body["result"][0]
+        implementation = item.get("Implementation") or None
+        return ContractMeta(
+            verified=item.get("ABI", "") != "Contract source code not verified",
+            name=item.get("ContractName") or None,
+            # Etherscan marks a proxy but does not give its type.
+            proxy_type="proxy" if item.get("Proxy") == "1" else None,
+            implementation=to_checksum(implementation) if implementation else None,
+        )

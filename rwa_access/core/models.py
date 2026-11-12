@@ -38,11 +38,24 @@ class RoleHolder:
 
 
 @dataclass(frozen=True)
+class ContractMeta:
+    """Contract data from the block explorer."""
+
+    verified: bool
+    name: str | None = None
+    proxy_type: str | None = None  # Explorer's proxy marker, if any
+    implementation: str | None = None  # Explorer's implementation, if any
+
+
+@dataclass(frozen=True)
 class AddressInfo:
     address: str
     kind: str  # "EOA" | "EOA (EIP-7702)" | "Contract"
     verified: bool | None = None  # Only set for contracts
     delegate: str | None = None  # Only set for EIP-7702 EOAs
+    name: str | None = None  # Contract name from the explorer
+    proxy: "ProxyInfo | None" = None  # Only set for supported proxies
+    notes: tuple[str, ...] = ()
 
     @property
     def label(self) -> str:
@@ -52,9 +65,22 @@ class AddressInfo:
 
     @property
     def note(self) -> str:
+        parts = []
         if self.delegate:
-            return f"EIP-7702 delegation to {self.delegate}"
-        return ""
+            parts.append(f"EIP-7702 delegation to {self.delegate}")
+        if self.proxy:
+            parts.append(f"{self.proxy.proxy_type} proxy")
+        parts.extend(self.notes)
+        return "; ".join(parts)
+
+
+@dataclass(frozen=True)
+class ProxyInfo:
+    proxy_type: str  # "ERC-1967" | "ERC-1967 beacon"
+    implementation: AddressInfo | None  # Classified implementation contract
+    admin: str | None = None  # EIP-1967 admin slot (transparent proxy)
+    beacon: str | None = None  # EIP-1967 beacon slot (beacon proxy)
+    notes: tuple[str, ...] = ()
 
 
 @dataclass

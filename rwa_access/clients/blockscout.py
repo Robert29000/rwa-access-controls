@@ -1,4 +1,6 @@
 from rwa_access.clients.explorer import Explorer
+from rwa_access.core.models import ContractMeta
+from rwa_access.evm import to_checksum
 from rwa_access.http import RateLimitedSession
 
 
@@ -22,8 +24,14 @@ class BlockscoutExplorer(Explorer):
     def logs_params(self) -> dict:
         return {"apikey": self.api_key}
 
-    def _is_verified(self, address: str) -> bool:
+    def _contract_info(self, address: str) -> ContractMeta:
         body = self.session.get_json(
             f"{self.base}/api/v2/addresses/{address}", {"apikey": self.api_key}
         )
-        return bool(body.get("is_verified"))
+        implementations = body.get("implementations") or []
+        return ContractMeta(
+            verified=bool(body.get("is_verified")),
+            name=body.get("name") or None,
+            proxy_type=body.get("proxy_type") or None,  # For example "eip1967", "eip1967_beacon"
+            implementation=to_checksum(implementations[0]["address_hash"]) if implementations else None,
+        )

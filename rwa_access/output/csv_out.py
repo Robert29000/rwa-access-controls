@@ -7,7 +7,11 @@ ROLE_FIELDS = [
     "provider", "chain_id", "snapshot_block", "stock", "token_symbol", "token", "role", "holder",
     "holder_type", "delegate", "last_change_block", "last_change_tx", "validated", "note",
 ]
-ADDRESS_FIELDS = ["provider", "chain_id", "address", "holder_type", "delegate", "roles"]
+ADDRESS_FIELDS = [
+    "provider", "chain_id", "address", "holder_type", "contract_name", "delegate", "roles",
+    "proxy_type", "implementation", "implementation_name", "implementation_type",
+    "proxy_admin", "proxy_beacon", "note",
+]
 
 
 def write_csv(results: list[ProviderResult], out_dir: Path) -> list[Path]:
@@ -49,12 +53,22 @@ def write_csv(results: list[ProviderResult], out_dir: Path) -> list[Path]:
                 if item.role not in roles:
                     roles.append(item.role)
             for address, info in result.addresses.items():
+                proxy = info.proxy
+                impl = proxy.implementation if proxy else None
                 writer.writerow({
                     "provider": result.provider,
                     "chain_id": result.chain_id,
                     "address": address,
                     "holder_type": info.label,
+                    "contract_name": info.name or "",
                     "delegate": info.delegate or "",
                     "roles": ";".join(roles_by_address.get(address, [])),
+                    "proxy_type": proxy.proxy_type if proxy else "",
+                    "implementation": impl.address if impl else "",
+                    "implementation_name": (impl.name or "") if impl else "",
+                    "implementation_type": impl.label if impl else "",
+                    "proxy_admin": (proxy.admin or "") if proxy else "",
+                    "proxy_beacon": (proxy.beacon or "") if proxy else "",
+                    "note": "; ".join(filter(None, [info.note, *(proxy.notes if proxy else ())])),
                 })
     return [roles_path, addresses_path]

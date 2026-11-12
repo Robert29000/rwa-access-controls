@@ -12,7 +12,9 @@ from rwa_access.clients.blockscout import BlockscoutExplorer
 from rwa_access.clients.etherscan import EtherscanExplorer
 from rwa_access.clients.explorer import Explorer
 from rwa_access.clients.rpc import RpcClient
+from rwa_access.core.abi import AbiStore
 from rwa_access.core.classify import AddressClassifier
+from rwa_access.core.proxy import default_detectors
 from rwa_access.http import RateLimitedSession
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -112,8 +114,9 @@ def _session(service: ServiceConfig) -> RateLimitedSession:
 class ChainContext:
     """RPC, explorer and address classifier for one chain. Clients are made on first use."""
 
-    def __init__(self, chain: ChainConfig):
+    def __init__(self, chain: ChainConfig, abis: AbiStore | None = None):
         self.chain = chain
+        self.abis = abis or AbiStore(DEFAULT_ABI_DIR)  # For the proxy detectors
 
     @cached_property
     def rpc(self) -> RpcClient:
@@ -137,4 +140,4 @@ class ChainContext:
 
     @cached_property
     def classifier(self) -> AddressClassifier:
-        return AddressClassifier(self.rpc, self.explorer)
+        return AddressClassifier(self.rpc, self.explorer, default_detectors(self.abis))

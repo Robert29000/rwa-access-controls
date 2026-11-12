@@ -34,8 +34,24 @@ For each provider, the tool does these steps:
 5. It reads the code at each holder address with `eth_getCode` and sets the address type:
    - No code: `EOA`.
    - Exactly `0xef0100` + 20-byte address: `EOA (EIP-7702)`. The delegate address goes in the note.
-   - Other code: `Contract`. The tool asks the explorer for the verification status of the source code.
-6. It writes the output files.
+   - Other code: `Contract`. The tool asks the explorer for the contract name and the verification status of the source code.
+6. For each contract, it looks for a supported proxy (see [Supported proxy types](#supported-proxy-types)). For a proxy, it reads the implementation address. Then it reads the type, the name and the verification status of the implementation.
+7. It writes the output files.
+
+### Supported proxy types
+
+The tool finds a proxy from the EIP-1967 storage slots at the snapshot block. It does not use the explorer for this step.
+
+| Proxy type | How the tool finds it | Implementation | Admin or beacon |
+|---|---|---|---|
+| `ERC-1967` | The EIP-1967 implementation slot is not zero. This type includes `ERC1967Proxy` (UUPS) and `TransparentUpgradeableProxy`. | Value of the implementation slot | Value of the EIP-1967 admin slot. It is empty for UUPS proxies. |
+| `ERC-1967 beacon` | The implementation slot is zero and the EIP-1967 beacon slot is not zero (`BeaconProxy`). | Return value of `beacon.implementation()` | Value of the beacon slot |
+
+The tool does not support other proxy types, for example Gnosis Safe proxies, EIP-1167 minimal proxies or Diamond (EIP-2535) proxies. If the explorer marks a contract as a proxy and the tool does not find a supported type, the report gives a note.
+
+The tool also compares the implementation from the storage slot with the implementation from the explorer. If they are different, the report gives a note.
+
+To support a new proxy type, write a subclass of `ProxyDetector` in `rwa_access/core/proxy.py`. Then add it to `default_detectors()`.
 
 ### Data sources
 
@@ -85,8 +101,8 @@ The tool writes these files to `output/`:
 | File | Content |
 |---|---|
 | `role_assignments.csv` | One row for each (stock, role, holder). It includes the last change block and transaction, the address type, and the validation result. |
-| `addresses.csv` | One row for each holder address, with its type and roles. |
-| `report.md` | For each provider: a token list, a role × stock table, and an address table. |
+| `addresses.csv` | One row for each holder address: type, contract name, roles and proxy data (proxy type, implementation, implementation type, admin, beacon). |
+| `report.md` | For each provider: a token list, the role hashes (AccessControl only), a role × stock table, an address table and a proxy table. |
 
 `validated=True` means that the on-chain value agrees with the value from the events. If `validated=False`, the `note` column gives the on-chain value. Examine these rows manually.
 
@@ -99,7 +115,7 @@ config/
     robinhood.yaml          One file for each provider
     xstocks.yaml
 abis/
-  openzeppelin/             Standard interfaces (AccessControl)
+  openzeppelin/             Standard interfaces (AccessControl, IBeacon)
   robinhood/                Stock, AccessControlsRegistry
   backed/                   BackedAutoFeeTokenImplementation, BackedTokenProxy, ProxyAdmin
 ```
@@ -210,7 +226,12 @@ If no framework agrees with the role model, write a subclass of `StockProvider` 
 .venv/bin/pytest -q
 ```
 
-The tests cover these items: the event replay, the address classification, the Markdown tables, and the loading of the shipped configs and ABIs. They do not use the network.
+The tests do not use the network. They cover these items:
+
+- The event replay.
+- The address classification and the proxy detection.
+- The Markdown tables.
+- The loading of the shipped configs and ABIs.
 
 ## Project layout
 
@@ -225,6 +246,7 @@ rwa_access/
     reads.py           Readers (eth_call, storage slot)
     replay.py          Event replay
     classify.py        Address classification
+    proxy.py           Proxy detection (ERC-1967)
     models.py          Data models
   providers/
     __init__.py        Provider loader and framework list

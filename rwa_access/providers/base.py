@@ -75,7 +75,7 @@ class StockProvider(ABC):
         self.name = config.name
         self.chain = config.chain
         self.tokens = config.tokens
-        self.ctx = ctx or ChainContext(config.chain)
+        self.ctx = ctx or ChainContext(config.chain, config.abis)
         self.notes: list[str] = []
 
     @property
