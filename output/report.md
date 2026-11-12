@@ -1,6 +1,6 @@
 # Access control report for tokenized stocks
 
-Generated: 2026-11-12 21:43 UTC.
+Generated: 2026-11-12 21:52 UTC.
 
 This report shows the current role holders of each stock token. The script did these steps:
 
@@ -22,7 +22,7 @@ In the "Role" column of the address table, a stock list in parentheses shows tha
 ## Robinhood Stocks
 
 - Chain: Robinhood Chain (chain ID 4663).
-- Snapshot block: 112850477.
+- Snapshot block: 112855557.
 - Validation: 119 of 119 role assignments agree with the RPC read at the snapshot block.
 
 ### Tokens
@@ -78,7 +78,7 @@ In the "Role" column of the address table, a stock list in parentheses shows tha
 ## xStocks
 
 - Chain: Ethereum (chain ID 1).
-- Snapshot block: 26401628.
+- Snapshot block: 26401673.
 - Validation: 49 of 49 role assignments agree with the RPC read at the snapshot block.
 
 ### Tokens
