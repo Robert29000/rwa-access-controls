@@ -168,7 +168,8 @@ class AbiStore:
         self._cache: dict[Path, Abi] = {} if _cache is None else _cache
 
     def with_aliases(self, aliases: dict[str, str]) -> "AbiStore":
-        return AbiStore(self.root, aliases, self._cache)
+        """New store with these aliases added to the current aliases (same cache)."""
+        return AbiStore(self.root, {**self.aliases, **(aliases or {})}, self._cache)
 
     def get(self, ref: str) -> Abi:
         path = (self.root / self.aliases.get(ref, ref)).resolve()

@@ -1,36 +1,26 @@
 """Load providers from config/providers/*.yaml.
 
-The `framework` key of a provider file selects the provider class:
-  - a key in FRAMEWORKS, or
-  - "package.module:ClassName" for a custom StockProvider subclass.
+The `framework` key of a provider file selects the provider class (see frameworks.py).
+The optional `extras` list of a provider file adds extra modules (see rwa_access/extras).
 """
 
-import importlib
 from pathlib import Path
 
 from rwa_access.config import ConfigError, load_chains, load_yaml
 from rwa_access.core.abi import AbiError, AbiStore
-from rwa_access.providers.access_control import AccessControlProvider
 from rwa_access.providers.base import ProviderConfig, StockProvider
-from rwa_access.providers.storage_roles import StorageRoleProvider
+from rwa_access.providers.frameworks import FRAMEWORKS, provider_class
 
-FRAMEWORKS: dict[str, type[StockProvider]] = {
-    "access_control": AccessControlProvider,
-    "single_address_roles": StorageRoleProvider,
-}
-
-
-def _provider_class(framework: str) -> type[StockProvider]:
-    if framework in FRAMEWORKS:
-        return FRAMEWORKS[framework]
-    if ":" in framework:
-        module, name = framework.split(":", 1)
-        return getattr(importlib.import_module(module), name)
-    raise KeyError(f"framework '{framework}' (known: {', '.join(FRAMEWORKS)})")
+__all__ = ["FRAMEWORKS", "load_providers", "provider_class"]
 
 
 def load_providers(config_dir: Path, abi_dir: Path) -> dict[str, StockProvider]:
-    """Return {file name without extension: provider}, sorted by file name."""
+    """Return {file name without extension: provider}, sorted by file name.
+
+    Each provider has its extra modules in `provider.extras`.
+    """
+    from rwa_access.extras import load_extras  # Here: rwa_access.extras imports this package
+
     chains = load_chains(config_dir / "chains.yaml")
     abis = AbiStore(abi_dir)
     providers: dict[str, StockProvider] = {}
@@ -38,7 +28,9 @@ def load_providers(config_dir: Path, abi_dir: Path) -> dict[str, StockProvider]:
         raw = load_yaml(path)
         try:
             config = ProviderConfig.from_yaml(path.stem, raw, chains, abis, path)
-            providers[path.stem] = _provider_class(raw["framework"])(config)
+            provider = provider_class(raw["framework"])(config)
+            provider.extras = load_extras(provider)
         except (KeyError, AbiError, ValueError, TypeError) as exc:
             raise ConfigError(f"{path}: {type(exc).__name__}: {exc}") from exc
+        providers[path.stem] = provider
     return providers

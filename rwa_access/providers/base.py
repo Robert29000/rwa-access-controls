@@ -42,31 +42,51 @@ class ProviderConfig:
     key: str  # File name without extension, used on the CLI
     name: str
     chain: ChainConfig
-    tokens: list[Token]
+    tokens: list[Token]  # Stock tokens, or the contracts of an extra module
     token_checks: list[TokenCheck]
     abis: AbiStore  # Includes the aliases from the provider file
     raw: dict  # Full YAML content, for the framework section
     source: Path
+    subject: str = "Stock"  # "Contract" when the config lists `contracts`, not `tokens`
+    description: str = ""
 
     @classmethod
     def from_yaml(cls, key: str, raw: dict, chains: dict[str, ChainConfig], abis: AbiStore, source: Path):
         abis = abis.with_aliases(raw.get("abis", {}))
         if raw["chain"] not in chains:
             raise KeyError(f"chain '{raw['chain']}' (known: {', '.join(chains)})")
-        tokens = [
-            Token(
-                stock=str(item["stock"]),
-                symbol=str(item.get("symbol", item["stock"])),
-                address=to_checksum(item["address"]),
-                start_block=int(item.get("start_block", 0)),
-            )
-            for item in raw["tokens"]
-        ]
+        if "contracts" in raw:
+            # Extra module: {name, address, start_block, description}. The name is the column name.
+            subject = "Contract"
+            tokens = [
+                Token(
+                    stock=str(item["name"]),
+                    symbol=str(item["name"]),
+                    address=to_checksum(item["address"]),
+                    start_block=int(item.get("start_block", 0)),
+                    description=" ".join(str(item.get("description", "")).split()),
+                )
+                for item in raw["contracts"]
+            ]
+        else:
+            subject = "Stock"
+            tokens = [
+                Token(
+                    stock=str(item["stock"]),
+                    symbol=str(item.get("symbol", item["stock"])),
+                    address=to_checksum(item["address"]),
+                    start_block=int(item.get("start_block", 0)),
+                )
+                for item in raw["tokens"]
+            ]
         checks = [
             TokenCheck(item["name"], Reader.from_config(item["read"], abis), str(item["expect"]))
             for item in raw.get("token_checks", [])
         ]
-        return cls(key, raw["name"], chains[raw["chain"]], tokens, checks, abis, raw, source)
+        description = " ".join(str(raw.get("description", "")).split())
+        return cls(
+            key, raw["name"], chains[raw["chain"]], tokens, checks, abis, raw, source, subject, description
+        )
 
 
 class StockProvider(ABC):
@@ -77,6 +97,7 @@ class StockProvider(ABC):
         self.tokens = config.tokens
         self.ctx = ctx or ChainContext(config.chain, config.abis)
         self.notes: list[str] = []
+        self.extras: list["StockProvider"] = []  # Extra modules (see rwa_access/extras)
 
     @property
     def rpc(self):
@@ -137,8 +158,10 @@ class StockProvider(ABC):
                     self.notes.append(f"{token.stock}: {problem}.")
         return problems
 
-    def run(self) -> ProviderResult:
-        block = self.rpc.block_number()
+    def run(self, block: int | None = None) -> ProviderResult:
+        """Collect, check, validate and classify at `block` (default: the latest block)."""
+        if block is None:
+            block = self.rpc.block_number()
         log.info("%s: snapshot block %d on %s", self.name, block, self.chain.name)
         holders = self.collect(block)
         log.info("%s: %d role assignments from logs", self.name, len(holders))
@@ -164,4 +187,6 @@ class StockProvider(ABC):
             notes=self.notes,
             role_hashes=self.role_hashes(),
             role_registries=self.role_registries(),
+            subject=self.config.subject,
+            description=self.config.description,
         )

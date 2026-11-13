@@ -21,6 +21,7 @@ class Token:
     symbol: str  # On-chain token symbol, e.g. "GOOGLx"
     address: str
     start_block: int = 0  # First block to scan for logs (token creation)
+    description: str = ""  # Optional text for the report (used for extra contracts)
 
 
 @dataclass
@@ -99,3 +100,6 @@ class ProviderResult:
     # and the contracts to call hasRole() on.
     role_hashes: dict[str, str] = field(default_factory=dict)
     role_registries: list[str] = field(default_factory=list)
+    # "Stock" for a provider, "Contract" for an extra module (see rwa_access/extras).
+    subject: str = "Stock"
+    description: str = ""  # Optional text under the section heading
