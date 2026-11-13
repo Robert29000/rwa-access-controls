@@ -59,9 +59,16 @@ class RateLimitedSession:
 
 
 def _is_rate_limited(body) -> bool:
+    """True for an API error about the request rate.
+
+    Look only at error text: `message`, a string `result` and `error.message`.
+    A successful result (for example verified source code) can contain the words
+    "rate limit", so a list or object `result` is not examined.
+    """
     if not isinstance(body, dict):
         return False
-    text = f"{body.get('message', '')} {body.get('result', '')}".lower()
+    result = body.get("result")
+    text = f"{body.get('message', '')} {result if isinstance(result, str) else ''}".lower()
     if isinstance(body.get("error"), dict):
         text += " " + str(body["error"].get("message", "")).lower()
     return any(marker in text for marker in RATE_LIMIT_MARKERS)
