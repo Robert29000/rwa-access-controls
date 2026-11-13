@@ -1,0 +1,8 @@
+provider,chain_id,address,holder_type,contract_name,delegate,roles,proxy_type,implementation,implementation_name,implementation_type,proxy_admin,proxy_beacon,note
+Ondo Global Markets: minter contracts,1,0x3715B2154d2FF4C5B027C7a1f734B53F27bc34f1,Contract (verified),TimelockController,,DEFAULT_ADMIN_ROLE;UNPAUSER_ROLE,,,,,,,
+Ondo Global Markets: minter contracts,1,0x71A4d411b5f7941Dee020417fca30413712f1646,Contract (verified),SafeProxy,,CONFIGURER_ROLE;UNPAUSER_ROLE;ADMIN_MINT_ROLE,,,,,,,"The explorer marks this contract as a proxy (type: proxy, implementation 0x41675C099F32341bf84BFc5382aF534df5C7461a). The tool does not support this proxy type."
+Ondo Global Markets: minter contracts,1,0xD2746617c58b72254785BDb483e04f311c858d5f,Contract (verified),TokenManagerRegistrar,,CONFIGURER_ROLE,,,,,,,
+Ondo Global Markets: minter contracts,1,0x2e55b738F5969Eea10fB67e326BEE5e2fA15A2CC,Contract (verified),GnosisSafeProxy,,PAUSER_ROLE,,,,,,,"The explorer marks this contract as a proxy (type: proxy, implementation 0x3E5c63644E683549055b9Be8653de26E0B4CD36E). The tool does not support this proxy type."
+Ondo Global Markets: minter contracts,1,0xff2D04f6002C10eba702aDafE2f43CAc5996C477,EOA,,,ATTESTATION_SIGNER_ROLE,,,,,,,
+Ondo Global Markets: minter contracts,1,0xBef069828Ed464Cb6c41b60e608749E4fe76edaf,EOA,,,SUBMITTER_ROLE,,,,,,,
+Ondo Global Markets: minter contracts,1,0x27b48877b4C056922F2659DD92C7D3ff2595E4dd,EOA,,,ALPACA_SIGNER_ROLE,,,,,,,

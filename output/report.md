@@ -1,6 +1,6 @@
 # Access control report for tokenized stocks
 
-Generated: 2026-11-12 23:03 UTC.
+Generated: 2026-11-13 22:45 UTC.
 
 This report shows the current role holders of each stock token. The script did these steps:
 
@@ -28,10 +28,69 @@ The tool supports only ERC-1967 proxies. If the explorer marks a contract as a p
 
 Look at the "Role" column of the address and proxy tables. A stock list in parentheses shows that the address has the role only for those stocks. If there is no list, the address has the role for all stocks.
 
+## Ondo Global Markets
+
+- Chain: Ethereum (chain ID 1).
+- Snapshot block: 26409115.
+- Validation: 28 of 28 role assignments agree with the RPC read at the snapshot block.
+
+### Tokens
+
+| Stock | Symbol | Token address |
+| --- | --- | --- |
+| NVDA | NVDAon | [0x2D1F7226Bd1F780AF6B9A49DCC0aE00E8Df4bDEE](https://etherscan.io/address/0x2D1F7226Bd1F780AF6B9A49DCC0aE00E8Df4bDEE) |
+| MSFT | MSFTon | [0xB812837b81a3a6b81d7CD74CfB19A7f2784555E5](https://etherscan.io/address/0xB812837b81a3a6b81d7CD74CfB19A7f2784555E5) |
+| TSLA | TSLAon | [0xf6b1117ec07684D3958caD8BEb1b302bfD21103f](https://etherscan.io/address/0xf6b1117ec07684D3958caD8BEb1b302bfD21103f) |
+| GOOGL | GOOGLon | [0xbA47214eDd2bb43099611b208f75E4b42FDcfEDc](https://etherscan.io/address/0xbA47214eDd2bb43099611b208f75E4b42FDcfEDc) |
+| AAPL | AAPLon | [0x14c3abF95Cb9C93a8b82C1CdCB76D72Cb87b2d4c](https://etherscan.io/address/0x14c3abF95Cb9C93a8b82C1CdCB76D72Cb87b2d4c) |
+| SPCX | SPCXon | [0xc9eef266834730340A55B6CC24621B31BAF55581](https://etherscan.io/address/0xc9eef266834730340A55B6CC24621B31BAF55581) |
+| META | METAon | [0x59644165402b611b350645555B50Afb581C71EB2](https://etherscan.io/address/0x59644165402b611b350645555B50Afb581C71EB2) |
+
+### Role hashes
+
+To examine a role on the explorer, call `hasRole(role, account)` on the token contract.
+
+| Role | Hash (bytes32) |
+| --- | --- |
+| DEFAULT_ADMIN_ROLE | `0x0000000000000000000000000000000000000000000000000000000000000000` |
+| MINTER_ROLE | `0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6` |
+| BURNER_ROLE | `0x3c11d16cbaffd01df69ce1c404f6340ee057498f5f00246190ea54220576a848` |
+| CONFIGURER_ROLE | `0xf45c97b23e2beeefda80e1ce5cb3e234aa7b6888ad5cbabb75bfd654dd8e102d` |
+
+### Role holders by stock
+
+| Role | NVDA | MSFT | TSLA | GOOGL | AAPL | SPCX | META |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| DEFAULT_ADMIN_ROLE | 0x3715B2154d2FF4C5B027C7a1f734B53F27bc34f1 | 0x3715B2154d2FF4C5B027C7a1f734B53F27bc34f1 | 0x3715B2154d2FF4C5B027C7a1f734B53F27bc34f1 | 0x3715B2154d2FF4C5B027C7a1f734B53F27bc34f1 | 0x3715B2154d2FF4C5B027C7a1f734B53F27bc34f1 | 0x3715B2154d2FF4C5B027C7a1f734B53F27bc34f1 | 0x3715B2154d2FF4C5B027C7a1f734B53F27bc34f1 |
+| MINTER_ROLE | 0x2c158BC456e027b2AfFCCadF1BDBD9f5fC4c5C8c<br>0x66297414b401f8c5c33Ad9B245C9F6E009c879B4<br>0xec8bBB0c90c0B5F4D8240D0F7b49DA3b0aA41f4E | 0x2c158BC456e027b2AfFCCadF1BDBD9f5fC4c5C8c<br>0xD6a5ac733A36345a2446eCE4d5d2C56b60f16D8F<br>0xec8bBB0c90c0B5F4D8240D0F7b49DA3b0aA41f4E | 0x2c158BC456e027b2AfFCCadF1BDBD9f5fC4c5C8c<br>0xDe1cd84E394142a396FEa055eeEdF84a64aa7431<br>0xec8bBB0c90c0B5F4D8240D0F7b49DA3b0aA41f4E | 0x2c158BC456e027b2AfFCCadF1BDBD9f5fC4c5C8c<br>0x4a8723Ba3166e75608b5A9494d3eD19bAa3aB5Cc<br>0xec8bBB0c90c0B5F4D8240D0F7b49DA3b0aA41f4E | 0x2c158BC456e027b2AfFCCadF1BDBD9f5fC4c5C8c<br>0xeA8dBF5F3456FaB742fc11b977330A58069758eF<br>0xec8bBB0c90c0B5F4D8240D0F7b49DA3b0aA41f4E | 0x81913EB9bDCe9AE9B617CdB7dcf01b634750B9d3<br>0x2c158BC456e027b2AfFCCadF1BDBD9f5fC4c5C8c<br>0xec8bBB0c90c0B5F4D8240D0F7b49DA3b0aA41f4E | 0x2c158BC456e027b2AfFCCadF1BDBD9f5fC4c5C8c<br>0x885556Ace4B04684ABA55B577314bf6373A12D35<br>0xec8bBB0c90c0B5F4D8240D0F7b49DA3b0aA41f4E |
+| BURNER_ROLE | — | — | — | — | — | — | — |
+| CONFIGURER_ROLE | — | — | — | — | — | — | — |
+
+### Role holder addresses
+
+| Address | Role | Type | Note |
+| --- | --- | --- | --- |
+| [0x3715B2154d2FF4C5B027C7a1f734B53F27bc34f1](https://etherscan.io/address/0x3715B2154d2FF4C5B027C7a1f734B53F27bc34f1) | DEFAULT_ADMIN_ROLE | Contract (verified) | — |
+| [0x2c158BC456e027b2AfFCCadF1BDBD9f5fC4c5C8c](https://etherscan.io/address/0x2c158BC456e027b2AfFCCadF1BDBD9f5fC4c5C8c) | MINTER_ROLE | Contract (verified) | — |
+| [0x4a8723Ba3166e75608b5A9494d3eD19bAa3aB5Cc](https://etherscan.io/address/0x4a8723Ba3166e75608b5A9494d3eD19bAa3aB5Cc) | MINTER_ROLE (GOOGL) | Contract (verified) | — |
+| [0x66297414b401f8c5c33Ad9B245C9F6E009c879B4](https://etherscan.io/address/0x66297414b401f8c5c33Ad9B245C9F6E009c879B4) | MINTER_ROLE (NVDA) | Contract (verified) | — |
+| [0x81913EB9bDCe9AE9B617CdB7dcf01b634750B9d3](https://etherscan.io/address/0x81913EB9bDCe9AE9B617CdB7dcf01b634750B9d3) | MINTER_ROLE (SPCX) | Contract (verified) | — |
+| [0x885556Ace4B04684ABA55B577314bf6373A12D35](https://etherscan.io/address/0x885556Ace4B04684ABA55B577314bf6373A12D35) | MINTER_ROLE (META) | Contract (verified) | — |
+| [0xD6a5ac733A36345a2446eCE4d5d2C56b60f16D8F](https://etherscan.io/address/0xD6a5ac733A36345a2446eCE4d5d2C56b60f16D8F) | MINTER_ROLE (MSFT) | Contract (verified) | — |
+| [0xDe1cd84E394142a396FEa055eeEdF84a64aa7431](https://etherscan.io/address/0xDe1cd84E394142a396FEa055eeEdF84a64aa7431) | MINTER_ROLE (TSLA) | Contract (verified) | — |
+| [0xeA8dBF5F3456FaB742fc11b977330A58069758eF](https://etherscan.io/address/0xeA8dBF5F3456FaB742fc11b977330A58069758eF) | MINTER_ROLE (AAPL) | Contract (verified) | — |
+| [0xec8bBB0c90c0B5F4D8240D0F7b49DA3b0aA41f4E](https://etherscan.io/address/0xec8bBB0c90c0B5F4D8240D0F7b49DA3b0aA41f4E) | MINTER_ROLE | Contract (verified) | ERC-1967 proxy |
+
+### Proxy contracts
+
+| Proxy | Role | Proxy type | Implementation | Implementation type | Admin or beacon | Note |
+| --- | --- | --- | --- | --- | --- | --- |
+| [0xec8bBB0c90c0B5F4D8240D0F7b49DA3b0aA41f4E](https://etherscan.io/address/0xec8bBB0c90c0B5F4D8240D0F7b49DA3b0aA41f4E)<br>TransparentUpgradeableProxy | MINTER_ROLE | ERC-1967 | [0x88E7DC15e79fB8531C7A853843d14C634b6c5bCA](https://etherscan.io/address/0x88E7DC15e79fB8531C7A853843d14C634b6c5bCA)<br>GMIssuerManager | Contract (verified) | Admin: [0x48F4197fD803cd83B98bD8a097Eed8af218B4760](https://etherscan.io/address/0x48F4197fD803cd83B98bD8a097Eed8af218B4760) | — |
+
 ## Robinhood Stocks
 
 - Chain: Robinhood Chain (chain ID 4663).
-- Snapshot block: 112894098.
+- Snapshot block: 113710278.
 - Validation: 119 of 119 role assignments agree with the RPC read at the snapshot block.
 
 ### Tokens
@@ -114,7 +173,7 @@ To examine a role on the explorer, call `hasRole(role, account)` on the role reg
 ## xStocks
 
 - Chain: Ethereum (chain ID 1).
-- Snapshot block: 26402025.
+- Snapshot block: 26409118.
 - Validation: 49 of 49 role assignments agree with the RPC read at the snapshot block.
 
 ### Tokens

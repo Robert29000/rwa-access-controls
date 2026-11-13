@@ -1,4 +1,14 @@
 provider,chain_id,address,holder_type,contract_name,delegate,roles,proxy_type,implementation,implementation_name,implementation_type,proxy_admin,proxy_beacon,note
+Ondo Global Markets,1,0x3715B2154d2FF4C5B027C7a1f734B53F27bc34f1,Contract (verified),TimelockController,,DEFAULT_ADMIN_ROLE,,,,,,,
+Ondo Global Markets,1,0x2c158BC456e027b2AfFCCadF1BDBD9f5fC4c5C8c,Contract (verified),GMTokenManager,,MINTER_ROLE,,,,,,,
+Ondo Global Markets,1,0x66297414b401f8c5c33Ad9B245C9F6E009c879B4,Contract (verified),OndoOFT,,MINTER_ROLE,,,,,,,
+Ondo Global Markets,1,0xec8bBB0c90c0B5F4D8240D0F7b49DA3b0aA41f4E,Contract (verified),TransparentUpgradeableProxy,,MINTER_ROLE,ERC-1967,0x88E7DC15e79fB8531C7A853843d14C634b6c5bCA,GMIssuerManager,Contract (verified),0x48F4197fD803cd83B98bD8a097Eed8af218B4760,,ERC-1967 proxy
+Ondo Global Markets,1,0xD6a5ac733A36345a2446eCE4d5d2C56b60f16D8F,Contract (verified),OndoOFT,,MINTER_ROLE,,,,,,,
+Ondo Global Markets,1,0xDe1cd84E394142a396FEa055eeEdF84a64aa7431,Contract (verified),OndoOFT,,MINTER_ROLE,,,,,,,
+Ondo Global Markets,1,0x4a8723Ba3166e75608b5A9494d3eD19bAa3aB5Cc,Contract (verified),OndoOFT,,MINTER_ROLE,,,,,,,
+Ondo Global Markets,1,0xeA8dBF5F3456FaB742fc11b977330A58069758eF,Contract (verified),OndoOFT,,MINTER_ROLE,,,,,,,
+Ondo Global Markets,1,0x81913EB9bDCe9AE9B617CdB7dcf01b634750B9d3,Contract (verified),OndoOFT,,MINTER_ROLE,,,,,,,
+Ondo Global Markets,1,0x885556Ace4B04684ABA55B577314bf6373A12D35,Contract (verified),OndoOFT,,MINTER_ROLE,,,,,,,
 Robinhood Stocks,4663,0xD6f8378F8e440c65F8382F5f2728c78DfD55B66d,EOA,,,DEFAULT_ADMIN_ROLE,,,,,,,
 Robinhood Stocks,4663,0xCd8C6182e7C6Ca3B5156D6a90a67719d7e2Be094,EOA,,,BEACON_UPGRADER_ROLE,,,,,,,
 Robinhood Stocks,4663,0x2b94105fFf37630f98e1f24811daD588FC5C3A87,EOA,,,MINTER_ROLE,,,,,,,
