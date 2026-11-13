@@ -1,0 +1,98 @@
+# Ondo Global Markets (GM) stock tokens on Ethereum.
+#
+# Each token is a BeaconProxy for `GMToken`. The beacon is UpgradeableBeacon
+# 0x985462C9aA4D6c3Ad59Ae6e1e9c0C11347ED1598 for all tokens. The owner of the beacon
+# (TimelockController 0x3715B2154d2FF4C5B027C7a1f734B53F27bc34f1) can upgrade all tokens.
+# GMToken uses OpenZeppelin AccessControlEnumerableUpgradeable in the token itself,
+# so the role holders come from getRoleMemberCount / getRoleMember on each token.
+# Source: https://github.com/ondoprotocol/rwa-contracts/tree/main/contracts/globalMarkets
+
+name: Ondo Global Markets
+chain: ethereum                        # Key in config/chains.yaml
+framework: access_control
+
+abis:                                  # Short names for ABI files in abis/
+  token: ondo/GMToken.json
+
+access_control:
+  abi: token
+  enumerable: true                     # Holders from getRoleMember(). The events validate them.
+  # No `registry`: each token keeps its own roles.
+  # Roles of GMToken (implementation 0xebBcb2cEE51c2FeE4062c9C1270dcb98B0b22250).
+  # The hash is keccak256(name), and 0x00 for DEFAULT_ADMIN_ROLE.
+  # DEFAULT_ADMIN_ROLE is the admin role of all roles.
+  roles:
+    - DEFAULT_ADMIN_ROLE
+    - MINTER_ROLE
+    - BURNER_ROLE
+    - CONFIGURER_ROLE
+
+token_checks:
+  - name: beacon is the GM token beacon
+    read: {storage_slot: eip1967.beacon}
+    expect: "0x985462C9aA4D6c3Ad59Ae6e1e9c0C11347ED1598"
+  - name: pause manager is the TokenPauseManager
+    read: {abi: token, function: tokenPauseManager}
+    expect: "0xfD48112E448417CA79305a518c4186dF4b0A200a"
+  - name: compliance is the OndoComplianceGMView
+    read: {abi: token, function: compliance}
+    expect: "0x54a8757c2FEF8649830b158a8C19D3a670e80318"
+
+# Official tokens from the Ondo GM token list. Each address agrees with the
+# NewGMTokenDeployed event of GMTokenFactory 0xE60F44AA6b7084d5Ca05D0e9145921e94bc23caB.
+# GOOGL is Alphabet class A (GOOGLon). Class C is a different token (GOOGon).
+# start_block: token creation block. The first RoleGranted event is in the creation transaction.
+tokens:
+  - {stock: NVDA,  symbol: NVDAon,  address: "0x2D1F7226Bd1F780AF6B9A49DCC0aE00E8Df4bDEE", start_block: 22985323}
+  - {stock: MSFT,  symbol: MSFTon,  address: "0xB812837b81a3a6b81d7CD74CfB19A7f2784555E5", start_block: 22985330}
+  - {stock: TSLA,  symbol: TSLAon,  address: "0xf6b1117ec07684D3958caD8BEb1b302bfD21103f", start_block: 22929298}
+  - {stock: GOOGL, symbol: GOOGLon, address: "0xbA47214eDd2bb43099611b208f75E4b42FDcfEDc", start_block: 22985256}
+  - {stock: AAPL,  symbol: AAPLon,  address: "0x14c3abF95Cb9C93a8b82C1CdCB76D72Cb87b2d4c", start_block: 22985295}
+  - {stock: SPCX,  symbol: SPCXon,  address: "0xc9eef266834730340A55B6CC24621B31BAF55581", start_block: 25205014}
+  - {stock: META,  symbol: METAon,  address: "0x59644165402b611b350645555B50Afb581C71EB2", start_block: 22985431}
+
+# Extra module: the minter contracts. The results go to extra_report.md and the
+# extra_*.csv files, not to report.md (see rwa_access/extras).
+# Both contracts hold MINTER_ROLE on all GM tokens. Both use OpenZeppelin
+# AccessControlEnumerable, so the default ABI openzeppelin/AccessControlEnumerable.json applies.
+# Sources: contracts/globalMarkets/issuer/GMIssuerManager.sol and
+# contracts/globalMarkets/tokenManager/GMTokenManager.sol.
+extras:
+  - key: minters
+    name: "Ondo Global Markets: minter contracts"
+    framework: access_control
+    description: >
+      GMTokenManager and GMIssuerManager hold MINTER_ROLE on all Ondo GM tokens.
+      They mint GM tokens to users. The roles below control who can mint, sign prices, pause and change the configuration.
+    access_control:
+      enumerable: true
+      # All roles of the two contracts. The hash is keccak256(name), and 0x00 for DEFAULT_ADMIN_ROLE.
+      # DEFAULT_ADMIN_ROLE is the admin role of all roles on the two contracts.
+      roles:
+        - DEFAULT_ADMIN_ROLE
+        - CONFIGURER_ROLE          # Both contracts
+        - PAUSER_ROLE              # Both contracts
+        - UNPAUSER_ROLE            # Both contracts
+        - ATTESTATION_SIGNER_ROLE  # GMTokenManager: signs the price quotes for mint and redeem
+        - ADMIN_MINT_ROLE          # GMTokenManager: mints without a quote
+        - SUBMITTER_ROLE           # GMIssuerManager: sends the mint requests
+        - ALPACA_SIGNER_ROLE       # GMIssuerManager: signs the mint requests
+        - PRIVILEGED_USER_ROLE     # GMIssuerManager: one grant for each user wallet
+    contracts:
+      # Not a proxy. Built with a constructor.
+      - name: GMTokenManager
+        address: "0x2c158BC456e027b2AfFCCadF1BDBD9f5fC4c5C8c"
+        start_block: 22926511
+        description: >
+          Mints and redeems GM tokens for USDon or USDC.
+          A key with ATTESTATION_SIGNER_ROLE signs each price quote.
+          ADMIN_MINT_ROLE mints without a quote. Not a proxy.
+      # TransparentUpgradeableProxy. Implementation 0x88E7DC15e79fB8531C7A853843d14C634b6c5bCA.
+      # ProxyAdmin 0x48F4197fD803cd83B98bD8a097Eed8af218B4760, owned by TimelockController 0x3715B2154d2FF4C5B027C7a1f734B53F27bc34f1.
+      - name: GMIssuerManager
+        address: "0xec8bBB0c90c0B5F4D8240D0F7b49DA3b0aA41f4E"
+        start_block: 25942189
+        description: >
+          Mints GM tokens for the Alpaca issuance path.
+          SUBMITTER_ROLE sends mint requests that a key with ALPACA_SIGNER_ROLE signed.
+          Users burn tokens to redeem. TransparentUpgradeableProxy.

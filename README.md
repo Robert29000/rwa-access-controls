@@ -8,6 +8,7 @@ This tool collects the current role holders of tokenized stocks. It checks each 
 |---|---|---|---|
 | Robinhood Stocks | Robinhood Chain (chain ID 4663) | NVDA, MSFT, TSLA, GOOGL, AAPL, SPCX (SpaceX), META | OpenZeppelin AccessControl in an external registry |
 | xStocks | Ethereum (chain ID 1) | NVDAx, MSFTx, TSLAx, GOOGLx, AAPLx, SPCXx (SpaceX), METAx | One address variable for each role |
+| Ondo Global Markets | Ethereum (chain ID 1) | NVDAon, MSFTon, TSLAon, GOOGLon, AAPLon, SPCXon (SpaceX), METAon | OpenZeppelin AccessControlEnumerable in each token |
 
 ### Robinhood Stocks
 
@@ -23,13 +24,21 @@ This tool collects the current role holders of tokenized stocks. It checks each 
 - The token roles are `owner`, `minter`, `burner`, `pauser` and `multiplierUpdater`.
 - The tool also reports `proxyAdmin` (the EIP-1967 admin slot) and `proxyAdminOwner`. The owner of the ProxyAdmin can upgrade the token.
 
+### Ondo Global Markets
+
+- Each token is a BeaconProxy for the `GMToken` contract. All tokens use the beacon `0x985462C9aA4D6c3Ad59Ae6e1e9c0C11347ED1598`. The owner of the beacon (a TimelockController) can upgrade all tokens.
+- Each token keeps its own roles with OpenZeppelin `AccessControlEnumerableUpgradeable`. The tool reads the holders with `getRoleMemberCount(role)` and `getRoleMember(role, index)`.
+- The token roles are `DEFAULT_ADMIN_ROLE`, `MINTER_ROLE`, `BURNER_ROLE` and `CONFIGURER_ROLE`.
+- The token checks compare the beacon, `tokenPauseManager()` and `compliance()` with the known addresses.
+- An extra module reads the roles of the two minter contracts, `GMTokenManager` and `GMIssuerManager`. The results go to `extra_report.md`. See [Extra modules](#extra-modules).
+
 ## How the tool works
 
 For each provider, the tool does these steps:
 
 1. It reads the latest block number. All later reads use this snapshot block.
 2. It reads the role events from the block explorer and keeps only the current holders.
-3. It reads each role on chain with an RPC call at the snapshot block. It compares this value with the value from the events.
+3. It reads each role on chain with an RPC call at the snapshot block. It compares this value with the value from the events. For AccessControlEnumerable (`enumerable: true`), the RPC list is the holder list. The tool compares this list with the events.
 4. It runs the token checks from the provider config.
 5. It reads the code at each holder address with `eth_getCode` and sets the address type:
    - No code: `EOA`.
@@ -103,6 +112,11 @@ The tool writes these files to `output/`:
 | `role_assignments.csv` | One row for each (stock, role, holder). It includes the last change block and transaction, the address type, and the validation result. |
 | `addresses.csv` | One row for each holder address: type, contract name, roles and proxy data (proxy type, implementation, implementation type, admin, beacon). |
 | `report.md` | For each provider: a token list, the role hashes (AccessControl only), a role × stock table, an address table and a proxy table. |
+| `extra_report.md` | For each extra module: a contract list, the role hashes, a role × contract table, an address table and a proxy table. |
+| `extra_role_assignments.csv` | As `role_assignments.csv`, for the extra modules. The columns `contract_name` and `contract` replace `stock`, `token_symbol` and `token`. |
+| `extra_addresses.csv` | As `addresses.csv`, for the extra modules. |
+
+The tool writes the `extra_*` files only when a selected provider has extra modules. Use `--no-extras` to skip the extra modules.
 
 `validated=True` means that the on-chain value agrees with the value from the events. If `validated=False`, the `note` column gives the on-chain value. Examine these rows manually.
 
@@ -112,12 +126,14 @@ The tool writes these files to `output/`:
 config/
   chains.yaml               API services and chains
   providers/
-    robinhood.yaml          One file for each provider
+    ondo.yaml               One file for each provider
+    robinhood.yaml
     xstocks.yaml
 abis/
-  openzeppelin/             Standard interfaces (AccessControl, IBeacon)
+  openzeppelin/             Standard interfaces (AccessControl, AccessControlEnumerable, IBeacon)
   robinhood/                Stock, AccessControlsRegistry
   backed/                   BackedAutoFeeTokenImplementation, BackedTokenProxy, ProxyAdmin
+  ondo/                     GMToken
 ```
 
 ### Chains
@@ -147,6 +163,7 @@ All provider files have these keys:
 | `abis` | Optional. Short names for ABI files. |
 | `tokens` | List of `{stock, symbol, address, start_block}`. `start_block` is optional. The log scan starts at this block. |
 | `token_checks` | Optional. Values to read from each token and compare. See below. |
+| `extras` | Optional. Extra modules for other contracts of the provider. See [Extra modules](#extra-modules). |
 
 #### `framework: access_control`
 
@@ -155,6 +172,7 @@ Use this framework for OpenZeppelin AccessControl. List only the roles that you 
 ```yaml
 access_control:
   abi: openzeppelin/AccessControl.json          # Default. Needs RoleGranted, RoleRevoked, hasRole.
+  enumerable: false                             # Optional. See below.
   registry: {abi: stock, function: ACCESS_CONTROLLED_REGISTRY}   # Optional. Default: the token itself.
   start_blocks: {"0xRegistry...": 7662}         # Optional
   roles:
@@ -164,6 +182,13 @@ access_control:
 ```
 
 The tool does not report holders of roles that are not in the list. The report gives a note with the hashes of these roles.
+
+`enumerable` selects the source of the holder list:
+
+- `false` (default): the tool replays the `RoleGranted` and `RoleRevoked` events. It calls `hasRole(role, holder)` for each holder and compares the result.
+- `true`: use this value for OpenZeppelin AccessControlEnumerable. The tool calls `getRoleMemberCount(role)` and `getRoleMember(role, index)` for each role in the list. The default ABI is then `openzeppelin/AccessControlEnumerable.json`. The tool also replays the events. A holder has `validated=True` if the event replay also has it. The replay gives the last change block and transaction. It also finds holders of roles that are not in the list.
+
+When the token keeps its own roles (no `registry`), the log scan starts at the `start_block` of the token.
 
 #### `framework: single_address_roles`
 
@@ -209,6 +234,36 @@ token_checks:
 
 If a check fails, the tool adds a note to the report and to the rows of that token.
 
+### Extra modules
+
+An extra module reads the roles of other contracts of a provider, for example the contracts that mint the tokens. The results go to the `extra_*` output files, not to `report.md`. The module uses the chain, the clients and the snapshot block of its provider.
+
+Add the module to the `extras` list of the provider file. An extra module has the same keys as a provider file, with these differences:
+
+| Key | Content |
+|---|---|
+| `contracts` | Replaces `tokens`. List of `{name, address, start_block, description}`. `name` is the column name in the report. `description` is optional. |
+| `key` | Optional. A short name for the log. |
+| `description` | Optional. Text below the section heading. |
+| `abis` | Optional. Adds to the ABI aliases of the provider. |
+| `chain` | Not permitted. The module uses the chain of the provider. |
+
+```yaml
+extras:
+  - key: minters
+    name: "Ondo Global Markets: minter contracts"
+    framework: access_control
+    access_control:
+      enumerable: true
+      roles: [DEFAULT_ADMIN_ROLE, PAUSER_ROLE]
+    contracts:
+      - {name: GMTokenManager, address: "0x2c15...", start_block: 22926511}
+```
+
+Each role in the list applies to all contracts of the module. If a contract does not have a role, the report shows a dash.
+
+To add a new type of extra module, write a subclass of `StockProvider` (for example in `rwa_access/extras/`). Then set `framework: rwa_access.extras.<module>:<ClassName>` in the module.
+
 ## Add a provider
 
 1. Put the ABIs of the contracts in `abis/<project>/`. You can get a verified ABI from the explorer.
@@ -229,6 +284,8 @@ If no framework agrees with the role model, write a subclass of `StockProvider` 
 The tests do not use the network. They cover these items:
 
 - The event replay.
+- The AccessControlEnumerable mode and the extra modules.
+- The detection of rate-limit errors.
 - The address classification and the proxy detection.
 - The Markdown tables.
 - The loading of the shipped configs and ABIs.
@@ -249,10 +306,12 @@ rwa_access/
     proxy.py           Proxy detection (ERC-1967)
     models.py          Data models
   providers/
-    __init__.py        Provider loader and framework list
+    __init__.py        Provider loader
+    frameworks.py      Framework list
     base.py            StockProvider, provider config, token checks
-    access_control.py  Framework: access_control
+    access_control.py  Framework: access_control (also AccessControlEnumerable)
     storage_roles.py   Framework: single_address_roles
+  extras/              Extra modules: loader for the `extras` list
   output/              CSV and Markdown writers
 config/                Chains and providers (YAML)
 abis/                  Contract ABIs (JSON)

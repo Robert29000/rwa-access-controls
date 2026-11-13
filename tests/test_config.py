@@ -10,7 +10,7 @@ def test_shipped_configs_load_and_resolve_abis():
     # A wrong ABI path, event name or argument name fails here. No network is used.
     providers = load_providers(DEFAULT_CONFIG_DIR, DEFAULT_ABI_DIR)
 
-    assert set(providers) == {"robinhood", "xstocks"}
+    assert set(providers) == {"ondo", "robinhood", "xstocks"}
     assert all(len(p.tokens) == 7 for p in providers.values())
 
     robinhood = providers["robinhood"]
@@ -30,3 +30,19 @@ def test_shipped_configs_load_and_resolve_abis():
     admin_changed = specs["proxyAdmin"].event
     log = Log("0x1", (admin_changed.topic0,), "0x" + "00" * 32 + "00" * 12 + "ab" * 20, 1, 0, "0x")
     assert admin_changed.decode(log)["newAdmin"].lower() == "0x" + "ab" * 20
+
+    ondo = providers["ondo"]
+    assert isinstance(ondo, AccessControlProvider) and ondo.enumerable
+    assert ondo.registry_reader is None  # Each token keeps its own roles
+    assert ondo.member_fn.selector == "0x9010d07c"
+    assert ondo.member_count_fn.selector == "0xca15c873"
+    assert [t.symbol for t in ondo.tokens] == [
+        "NVDAon", "MSFTon", "TSLAon", "GOOGLon", "AAPLon", "SPCXon", "METAon"
+    ]
+    # Extra module: the minter contracts, on the same chain and clients.
+    (minters,) = ondo.extras
+    assert isinstance(minters, AccessControlProvider) and minters.enumerable
+    assert minters.config.subject == "Contract"
+    assert [t.stock for t in minters.tokens] == ["GMTokenManager", "GMIssuerManager"]
+    assert minters.ctx is ondo.ctx
+    assert not providers["robinhood"].extras and not providers["xstocks"].extras
