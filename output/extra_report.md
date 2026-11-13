@@ -1,6 +1,6 @@
 # Access control report for other provider contracts
 
-Generated: 2026-11-13 22:45 UTC.
+Generated: 2026-11-13 23:04 UTC.
 
 This report is an addition to `report.md`. It shows the current role holders of other contracts of each provider. These contracts are not stock tokens. Examples are the contracts that mint and burn the stock tokens. The provider file lists these contracts in `extras`.
 
@@ -34,18 +34,16 @@ A dash in the "Role holders by contract" table means that the contract has no ho
 
 ## Ondo Global Markets: minter contracts
 
-GMTokenManager and GMIssuerManager hold MINTER_ROLE on all Ondo GM tokens. They mint GM tokens to users. The roles below control who can mint, sign prices, pause and change the configuration.
-
 - Chain: Ethereum (chain ID 1).
-- Snapshot block: 26409115.
+- Snapshot block: 26409206.
 - Validation: 13 of 13 role assignments agree with the RPC read at the snapshot block.
 
 ### Contracts
 
-| Contract | Address | Description |
-| --- | --- | --- |
-| GMTokenManager | [0x2c158BC456e027b2AfFCCadF1BDBD9f5fC4c5C8c](https://etherscan.io/address/0x2c158BC456e027b2AfFCCadF1BDBD9f5fC4c5C8c) | Mints and redeems GM tokens for USDon or USDC. A key with ATTESTATION_SIGNER_ROLE signs each price quote. ADMIN_MINT_ROLE mints without a quote. Not a proxy. |
-| GMIssuerManager | [0xec8bBB0c90c0B5F4D8240D0F7b49DA3b0aA41f4E](https://etherscan.io/address/0xec8bBB0c90c0B5F4D8240D0F7b49DA3b0aA41f4E) | Mints GM tokens for the Alpaca issuance path. SUBMITTER_ROLE sends mint requests that a key with ALPACA_SIGNER_ROLE signed. Users burn tokens to redeem. TransparentUpgradeableProxy. |
+| Contract | Address |
+| --- | --- |
+| GMTokenManager | [0x2c158BC456e027b2AfFCCadF1BDBD9f5fC4c5C8c](https://etherscan.io/address/0x2c158BC456e027b2AfFCCadF1BDBD9f5fC4c5C8c) |
+| GMIssuerManager | [0xec8bBB0c90c0B5F4D8240D0F7b49DA3b0aA41f4E](https://etherscan.io/address/0xec8bBB0c90c0B5F4D8240D0F7b49DA3b0aA41f4E) |
 
 ### Role hashes
 

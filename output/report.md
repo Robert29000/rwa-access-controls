@@ -1,6 +1,6 @@
 # Access control report for tokenized stocks
 
-Generated: 2026-11-13 22:45 UTC.
+Generated: 2026-11-13 23:03 UTC.
 
 This report shows the current role holders of each stock token. The script did these steps:
 
@@ -31,7 +31,7 @@ Look at the "Role" column of the address and proxy tables. A stock list in paren
 ## Ondo Global Markets
 
 - Chain: Ethereum (chain ID 1).
-- Snapshot block: 26409115.
+- Snapshot block: 26409206.
 - Validation: 28 of 28 role assignments agree with the RPC read at the snapshot block.
 
 ### Tokens
@@ -90,7 +90,7 @@ To examine a role on the explorer, call `hasRole(role, account)` on the token co
 ## Robinhood Stocks
 
 - Chain: Robinhood Chain (chain ID 4663).
-- Snapshot block: 113710278.
+- Snapshot block: 113720622.
 - Validation: 119 of 119 role assignments agree with the RPC read at the snapshot block.
 
 ### Tokens
@@ -173,7 +173,7 @@ To examine a role on the explorer, call `hasRole(role, account)` on the role reg
 ## xStocks
 
 - Chain: Ethereum (chain ID 1).
-- Snapshot block: 26409118.
+- Snapshot block: 26409209.
 - Validation: 49 of 49 role assignments agree with the RPC read at the snapshot block.
 
 ### Tokens
