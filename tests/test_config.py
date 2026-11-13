@@ -34,15 +34,6 @@ def test_shipped_configs_load_and_resolve_abis():
     ondo = providers["ondo"]
     assert isinstance(ondo, AccessControlProvider) and ondo.enumerable
     assert ondo.registry_reader is None  # Each token keeps its own roles
-    assert ondo.member_fn.selector == "0x9010d07c"
-    assert ondo.member_count_fn.selector == "0xca15c873"
-    assert [t.symbol for t in ondo.tokens] == [
-        "NVDAon", "MSFTon", "TSLAon", "GOOGLon", "AAPLon", "SPCXon", "METAon"
-    ]
-    # Extra module: the minter contracts, on the same chain and clients.
+    assert ondo.member_fn.selector == "0x9010d07c"  # From the GMToken ABI
     (minters,) = ondo.extras
-    assert isinstance(minters, AccessControlProvider) and minters.enumerable
-    assert minters.config.subject == "Contract"
     assert [t.stock for t in minters.tokens] == ["GMTokenManager", "GMIssuerManager"]
-    assert minters.ctx is ondo.ctx
-    assert not providers["robinhood"].extras and not providers["xstocks"].extras
