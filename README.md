@@ -242,9 +242,8 @@ Add the module to the `extras` list of the provider file. An extra module has th
 
 | Key | Content |
 |---|---|
-| `contracts` | Replaces `tokens`. List of `{name, address, start_block, description}`. `name` is the column name in the report. `description` is optional. |
+| `contracts` | Replaces `tokens`. List of `{name, address, start_block}`. `name` is the column name in the report. |
 | `key` | Optional. A short name for the log. |
-| `description` | Optional. Text below the section heading. |
 | `abis` | Optional. Adds to the ABI aliases of the provider. |
 | `chain` | Not permitted. The module uses the chain of the provider. |
 

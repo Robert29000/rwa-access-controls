@@ -8,12 +8,11 @@ main report.
 
 Each extra module is a StockProvider. Its config has the same keys as a provider
 file, with these differences:
-  - `contracts` replaces `tokens`: a list of {name, address, start_block, description}.
+  - `contracts` replaces `tokens`: a list of {name, address, start_block}.
     The `name` is the column name in the report.
   - `chain` is not permitted. The module uses the chain of the provider.
   - `abis` adds to the ABI aliases of the provider.
   - `key` (optional) is a short name for the log. Default: the list index.
-  - `description` (optional) is the text under the section heading.
 
   extras:
     - key: managers

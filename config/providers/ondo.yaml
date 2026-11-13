@@ -61,38 +61,20 @@ extras:
   - key: minters
     name: "Ondo Global Markets: minter contracts"
     framework: access_control
-    description: >
-      GMTokenManager and GMIssuerManager hold MINTER_ROLE on all Ondo GM tokens.
-      They mint GM tokens to users. The roles below control who can mint, sign prices, pause and change the configuration.
     access_control:
       enumerable: true
-      # All roles of the two contracts. The hash is keccak256(name), and 0x00 for DEFAULT_ADMIN_ROLE.
-      # DEFAULT_ADMIN_ROLE is the admin role of all roles on the two contracts.
+      # Roles of both contracts. A role that a contract does not have shows a dash.
       roles:
         - DEFAULT_ADMIN_ROLE
-        - CONFIGURER_ROLE          # Both contracts
-        - PAUSER_ROLE              # Both contracts
-        - UNPAUSER_ROLE            # Both contracts
-        - ATTESTATION_SIGNER_ROLE  # GMTokenManager: signs the price quotes for mint and redeem
-        - ADMIN_MINT_ROLE          # GMTokenManager: mints without a quote
-        - SUBMITTER_ROLE           # GMIssuerManager: sends the mint requests
-        - ALPACA_SIGNER_ROLE       # GMIssuerManager: signs the mint requests
-        - PRIVILEGED_USER_ROLE     # GMIssuerManager: one grant for each user wallet
+        - CONFIGURER_ROLE
+        - PAUSER_ROLE
+        - UNPAUSER_ROLE
+        - ATTESTATION_SIGNER_ROLE  # GMTokenManager only
+        - ADMIN_MINT_ROLE          # GMTokenManager only
+        - SUBMITTER_ROLE           # GMIssuerManager only
+        - ALPACA_SIGNER_ROLE       # GMIssuerManager only
+        - PRIVILEGED_USER_ROLE     # GMIssuerManager only
+    # start_block: contract creation block.
     contracts:
-      # Not a proxy. Built with a constructor.
-      - name: GMTokenManager
-        address: "0x2c158BC456e027b2AfFCCadF1BDBD9f5fC4c5C8c"
-        start_block: 22926511
-        description: >
-          Mints and redeems GM tokens for USDon or USDC.
-          A key with ATTESTATION_SIGNER_ROLE signs each price quote.
-          ADMIN_MINT_ROLE mints without a quote. Not a proxy.
-      # TransparentUpgradeableProxy. Implementation 0x88E7DC15e79fB8531C7A853843d14C634b6c5bCA.
-      # ProxyAdmin 0x48F4197fD803cd83B98bD8a097Eed8af218B4760, owned by TimelockController 0x3715B2154d2FF4C5B027C7a1f734B53F27bc34f1.
-      - name: GMIssuerManager
-        address: "0xec8bBB0c90c0B5F4D8240D0F7b49DA3b0aA41f4E"
-        start_block: 25942189
-        description: >
-          Mints GM tokens for the Alpaca issuance path.
-          SUBMITTER_ROLE sends mint requests that a key with ALPACA_SIGNER_ROLE signed.
-          Users burn tokens to redeem. TransparentUpgradeableProxy.
+      - {name: GMTokenManager,  address: "0x2c158BC456e027b2AfFCCadF1BDBD9f5fC4c5C8c", start_block: 22926511}
+      - {name: GMIssuerManager, address: "0xec8bBB0c90c0B5F4D8240D0F7b49DA3b0aA41f4E", start_block: 25942189}

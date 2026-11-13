@@ -104,10 +104,9 @@ def proxy_table(result: ProviderResult) -> list[str]:
 def provider_section(result: ProviderResult) -> list[str]:
     total = len(result.holders)
     passed = sum(1 for item in result.holders if item.validated)
-    lines = [f"## {result.provider}", ""]
-    if result.description:
-        lines += [result.description, ""]
-    lines += [
+    lines = [
+        f"## {result.provider}",
+        "",
         f"- Chain: {result.chain_name} (chain ID {result.chain_id}).",
         f"- Snapshot block: {result.snapshot_block}.",
         f"- Validation: {passed} of {total} role assignments agree with the RPC read at the snapshot block.",
@@ -132,10 +131,7 @@ def provider_section(result: ProviderResult) -> list[str]:
 def subject_table(result: ProviderResult) -> list[str]:
     """The stock tokens of a provider, or the contracts of an extra module."""
     if result.subject == "Contract":
-        return _table(
-            ["Contract", "Address", "Description"],
-            [[t.stock, _link(result, t.address), t.description or EMPTY] for t in result.tokens],
-        )
+        return _table(["Contract", "Address"], [[t.stock, _link(result, t.address)] for t in result.tokens])
     return _table(
         ["Stock", "Symbol", "Token address"],
         [[t.stock, t.symbol, _link(result, t.address)] for t in result.tokens],

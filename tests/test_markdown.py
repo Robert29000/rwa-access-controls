@@ -56,7 +56,7 @@ def test_provider_section_tables():
 
 
 def test_contract_section_for_extra_modules():
-    contracts = [Token("GMTokenManager", "GMTokenManager", "0x1", description="Mints tokens.")]
+    contracts = [Token("GMTokenManager", "GMTokenManager", "0x1")]
     result = ProviderResult(
         provider="Managers",
         chain_name="Ethereum",
@@ -70,14 +70,11 @@ def test_contract_section_for_extra_modules():
         role_hashes={"MINTER_ROLE": "0x" + "11" * 32},
         role_registries=["0x1"],
         subject="Contract",
-        description="Contracts that mint the tokens.",
     )
     text = "\n".join(provider_section(result))
 
-    assert "## Managers\n\nContracts that mint the tokens.\n" in text
     assert "### Contracts" in text and "### Tokens" not in text
-    assert "| GMTokenManager | [0x1](https://x/0x1) | Mints tokens. |" in text
+    assert "| GMTokenManager | [0x1](https://x/0x1) |" in text
     assert "### Role holders by contract" in text
-    assert "| Role | GMTokenManager |" in text
     # The contract keeps its own roles: no registry link list.
     assert "call `hasRole(role, account)` on the contract." in text

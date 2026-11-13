@@ -48,7 +48,6 @@ class ProviderConfig:
     raw: dict  # Full YAML content, for the framework section
     source: Path
     subject: str = "Stock"  # "Contract" when the config lists `contracts`, not `tokens`
-    description: str = ""
 
     @classmethod
     def from_yaml(cls, key: str, raw: dict, chains: dict[str, ChainConfig], abis: AbiStore, source: Path):
@@ -56,7 +55,7 @@ class ProviderConfig:
         if raw["chain"] not in chains:
             raise KeyError(f"chain '{raw['chain']}' (known: {', '.join(chains)})")
         if "contracts" in raw:
-            # Extra module: {name, address, start_block, description}. The name is the column name.
+            # Extra module: {name, address, start_block}. The name is the column name.
             subject = "Contract"
             tokens = [
                 Token(
@@ -64,7 +63,6 @@ class ProviderConfig:
                     symbol=str(item["name"]),
                     address=to_checksum(item["address"]),
                     start_block=int(item.get("start_block", 0)),
-                    description=" ".join(str(item.get("description", "")).split()),
                 )
                 for item in raw["contracts"]
             ]
@@ -83,10 +81,7 @@ class ProviderConfig:
             TokenCheck(item["name"], Reader.from_config(item["read"], abis), str(item["expect"]))
             for item in raw.get("token_checks", [])
         ]
-        description = " ".join(str(raw.get("description", "")).split())
-        return cls(
-            key, raw["name"], chains[raw["chain"]], tokens, checks, abis, raw, source, subject, description
-        )
+        return cls(key, raw["name"], chains[raw["chain"]], tokens, checks, abis, raw, source, subject)
 
 
 class StockProvider(ABC):
@@ -188,5 +183,4 @@ class StockProvider(ABC):
             role_hashes=self.role_hashes(),
             role_registries=self.role_registries(),
             subject=self.config.subject,
-            description=self.config.description,
         )
