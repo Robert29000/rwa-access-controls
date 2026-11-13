@@ -53,3 +53,31 @@ def test_provider_section_tables():
     # Role hashes table, only when the provider gives hashes.
     assert f"call `hasRole(role, account)` on the role registry: [{A}](https://x/{A})" in text
     assert f"| owner | `0x{'00' * 32}` |" in text
+
+
+def test_contract_section_for_extra_modules():
+    contracts = [Token("GMTokenManager", "GMTokenManager", "0x1", description="Mints tokens.")]
+    result = ProviderResult(
+        provider="Managers",
+        chain_name="Ethereum",
+        chain_id=1,
+        address_url="https://x/{address}",
+        snapshot_block=100,
+        tokens=contracts,
+        roles=["MINTER_ROLE"],
+        holders=[RoleHolder("Managers", 1, "GMTokenManager", "0x1", "MINTER_ROLE", B, validated=True)],
+        addresses={B: AddressInfo(B, "EOA")},
+        role_hashes={"MINTER_ROLE": "0x" + "11" * 32},
+        role_registries=["0x1"],
+        subject="Contract",
+        description="Contracts that mint the tokens.",
+    )
+    text = "\n".join(provider_section(result))
+
+    assert "## Managers\n\nContracts that mint the tokens.\n" in text
+    assert "### Contracts" in text and "### Tokens" not in text
+    assert "| GMTokenManager | [0x1](https://x/0x1) | Mints tokens. |" in text
+    assert "### Role holders by contract" in text
+    assert "| Role | GMTokenManager |" in text
+    # The contract keeps its own roles: no registry link list.
+    assert "call `hasRole(role, account)` on the contract." in text

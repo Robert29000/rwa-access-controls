@@ -17,7 +17,7 @@ def _table(header: list[str], rows: list[list[str]]) -> list[str]:
 
 
 def role_matrix(result: ProviderResult) -> list[str]:
-    """Table 1: one row for each role, one column for each stock."""
+    """Table 1: one row for each role, one column for each stock (or contract)."""
     cells: dict[tuple[str, str], list[str]] = {}
     for item in result.holders:
         text = item.holder if item.validated else f"{item.holder} (not validated)"
@@ -104,25 +104,22 @@ def proxy_table(result: ProviderResult) -> list[str]:
 def provider_section(result: ProviderResult) -> list[str]:
     total = len(result.holders)
     passed = sum(1 for item in result.holders if item.validated)
-    lines = [
-        f"## {result.provider}",
-        "",
+    lines = [f"## {result.provider}", ""]
+    if result.description:
+        lines += [result.description, ""]
+    lines += [
         f"- Chain: {result.chain_name} (chain ID {result.chain_id}).",
         f"- Snapshot block: {result.snapshot_block}.",
         f"- Validation: {passed} of {total} role assignments agree with the RPC read at the snapshot block.",
     ]
     for note in result.notes:
         lines.append(f"- Note: {note}")
-    lines += ["", "### Tokens", ""]
-    lines += _table(
-        ["Stock", "Symbol", "Token address"],
-        [[t.stock, t.symbol, f"[{t.address}]({result.address_url.format(address=t.address)})"]
-         for t in result.tokens],
-    )
+    lines += ["", "### Contracts" if result.subject == "Contract" else "### Tokens", ""]
+    lines += subject_table(result)
     if result.role_hashes:
         lines += ["", "### Role hashes", ""]
         lines += role_hash_section(result)
-    lines += ["", "### Role holders by stock", ""]
+    lines += ["", f"### Role holders by {result.subject.lower()}", ""]
     lines += role_matrix(result)
     lines += ["", "### Role holder addresses", ""]
     lines += address_table(result)
@@ -132,15 +129,30 @@ def provider_section(result: ProviderResult) -> list[str]:
     return lines
 
 
+def subject_table(result: ProviderResult) -> list[str]:
+    """The stock tokens of a provider, or the contracts of an extra module."""
+    if result.subject == "Contract":
+        return _table(
+            ["Contract", "Address", "Description"],
+            [[t.stock, _link(result, t.address), t.description or EMPTY] for t in result.tokens],
+        )
+    return _table(
+        ["Stock", "Symbol", "Token address"],
+        [[t.stock, t.symbol, _link(result, t.address)] for t in result.tokens],
+    )
+
+
 def role_hash_section(result: ProviderResult) -> list[str]:
     """Role name to bytes32 hash, for a manual hasRole(role, account) check on the explorer."""
-    links = ", ".join(
-        f"[{address}]({result.address_url.format(address=address)})" for address in result.role_registries
-    )
-    lines = [
-        f"To examine a role on the explorer, call `hasRole(role, account)` on the role registry: {links}.",
-        "",
-    ]
+    own = {t.address.lower() for t in result.tokens}
+    if result.role_registries and all(a.lower() in own for a in result.role_registries):
+        # Each token (or contract) keeps its own roles.
+        target = "the contract" if result.subject == "Contract" else "the token contract"
+        text = f"To examine a role on the explorer, call `hasRole(role, account)` on {target}."
+    else:
+        links = ", ".join(_link(result, address) for address in result.role_registries)
+        text = f"To examine a role on the explorer, call `hasRole(role, account)` on the role registry: {links}."
+    lines = [text, ""]
     return lines + _table(["Role", "Hash (bytes32)"], [[n, f"`{h}`"] for n, h in result.role_hashes.items()])
 
 
@@ -176,9 +188,45 @@ Look at the "Role" column of the address and proxy tables. A stock list in paren
 """
 
 
-def write_markdown(results: list[ProviderResult], path: Path) -> Path:
+EXTRA_HEADER = """# Access control report for other provider contracts
+
+Generated: {generated}.
+
+This report is an addition to `report.md`. It shows the current role holders of other contracts of each provider. These contracts are not stock tokens. Examples are the contracts that mint and burn the stock tokens. The provider file lists these contracts in `extras`.
+
+The script did these steps for each contract:
+
+1. The script read the role holders on chain at the snapshot block. For a contract with OpenZeppelin AccessControlEnumerable, the script called `getRoleMemberCount(role)` and `getRoleMember(role, index)`.
+2. The script read the `RoleGranted` and `RoleRevoked` events from the block explorer. It kept only the current holders. It compared this list with the list from step 1.
+3. The script read the code at each holder address. It set the type of each address.
+4. For each contract, the script read the EIP-1967 storage slots. If the contract is an ERC-1967 proxy, the script read its implementation address. Then it read the type and the verification status of the implementation.
+
+The snapshot block of each section is the same as the snapshot block of the provider in `report.md`.
+
+Types of address:
+
+- **EOA**: The address has no code.
+- **EOA (EIP-7702)**: The address is an EOA with an EIP-7702 delegation. The "Note" column shows the delegate contract.
+- **Contract (verified)**: The address has code. The explorer has the verified source code.
+- **Contract (not verified)**: The address has code. The explorer does not have the verified source code.
+
+"(not validated)" after an address means that the on-chain list and the event list do not agree. Examine these addresses manually.
+
+The "Proxy contracts" table shows the role holders that are ERC-1967 proxies:
+
+- **Proxy type**: "ERC-1967" means that the implementation is in the EIP-1967 implementation slot. "ERC-1967 beacon" means that the proxy gets the implementation from a beacon contract.
+- **Admin or beacon**: The value of the EIP-1967 admin slot, or the beacon address. A dash means that the admin slot is empty. In this case, the upgrade function is usually in the implementation (UUPS).
+- The contract name below an address comes from the block explorer.
+
+Look at the "Role" column of the address and proxy tables. A contract list in parentheses shows that the address has the role only on those contracts. If there is no list, the address has the role on all contracts of the section.
+
+A dash in the "Role holders by contract" table means that the contract has no holder for this role. Some roles do not exist on all contracts.
+"""
+
+
+def write_markdown(results: list[ProviderResult], path: Path, header: str = HEADER) -> Path:
     generated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-    lines = [HEADER.format(generated=generated)]
+    lines = [header.format(generated=generated)]
     for result in results:
         lines += provider_section(result)
     path.parent.mkdir(parents=True, exist_ok=True)

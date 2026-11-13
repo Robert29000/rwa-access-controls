@@ -7,6 +7,8 @@ ROLE_FIELDS = [
     "provider", "chain_id", "snapshot_block", "stock", "token_symbol", "token", "role", "holder",
     "holder_type", "delegate", "last_change_block", "last_change_tx", "validated", "note",
 ]
+# Extra modules (subject "Contract"): the stock columns name the contract.
+CONTRACT_COLUMNS = {"stock": "contract_name", "token": "contract"}
 ADDRESS_FIELDS = [
     "provider", "chain_id", "address", "holder_type", "contract_name", "delegate", "roles",
     "proxy_type", "implementation", "implementation_name", "implementation_type",
@@ -14,19 +16,30 @@ ADDRESS_FIELDS = [
 ]
 
 
-def write_csv(results: list[ProviderResult], out_dir: Path) -> list[Path]:
+def write_csv(
+    results: list[ProviderResult], out_dir: Path, prefix: str = "", subject: str = "Stock"
+) -> list[Path]:
+    """Write <prefix>role_assignments.csv and <prefix>addresses.csv.
+
+    subject "Contract" (extra modules): the columns are contract_name and contract,
+    not stock, token_symbol and token.
+    """
     out_dir.mkdir(parents=True, exist_ok=True)
-    roles_path = out_dir / "role_assignments.csv"
-    addresses_path = out_dir / "addresses.csv"
+    roles_path = out_dir / f"{prefix}role_assignments.csv"
+    addresses_path = out_dir / f"{prefix}addresses.csv"
+    if subject == "Contract":
+        role_fields = [CONTRACT_COLUMNS.get(f, f) for f in ROLE_FIELDS if f != "token_symbol"]
+    else:
+        role_fields = ROLE_FIELDS
 
     with roles_path.open("w", newline="") as fh:
-        writer = csv.DictWriter(fh, fieldnames=ROLE_FIELDS)
+        writer = csv.DictWriter(fh, fieldnames=role_fields)
         writer.writeheader()
         for result in results:
             symbols = {token.address: token.symbol for token in result.tokens}
             for item in result.holders:
                 info = result.addresses[item.holder]
-                writer.writerow({
+                row = {
                     "provider": item.provider,
                     "chain_id": item.chain_id,
                     "snapshot_block": result.snapshot_block,
@@ -41,7 +54,11 @@ def write_csv(results: list[ProviderResult], out_dir: Path) -> list[Path]:
                     "last_change_tx": item.last_change_tx or "",
                     "validated": item.validated,
                     "note": item.note,
-                })
+                }
+                if subject == "Contract":
+                    row.pop("token_symbol")
+                    row = {CONTRACT_COLUMNS.get(k, k): v for k, v in row.items()}
+                writer.writerow(row)
 
     with addresses_path.open("w", newline="") as fh:
         writer = csv.DictWriter(fh, fieldnames=ADDRESS_FIELDS)
